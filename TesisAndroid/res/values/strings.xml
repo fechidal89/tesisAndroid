@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">TesisAndroid</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">AgentDroid</string>
     <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">AgentDroid</string>
+    <string name="action_settings">Settings</string>
+    
+    
+    
+    <!-- TAB 1 - Config Agent  -->
+    <string name="community">Community:</string>
+    <string name="communityDefault">Public</string>
+    <string name="port">Port:</string>
+    <string name="portDefault">161</string>
+    <string name="version">Version:</string>
+    <string name="snmp1">SNMPv1</string>
+    <string name="snmp2">SNMPv2c</string>
+    <string name="button_ON">Service SNMP ON</string>
+    <string name="button_OFF">Service SNMP OFF</string>
+    
+    
+    <!-- TAB 2 - Service Send Traps  -->
+    <string name="bTraps">Send Trap</string>
+    
+    <!-- TAB 3 - System Group  -->
+    <string name="systemGroup">System Group:</string>
+        
 
 </resources>
