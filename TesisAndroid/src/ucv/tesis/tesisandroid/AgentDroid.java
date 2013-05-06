@@ -22,6 +22,7 @@ public class AgentDroid extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_agent_droid);
 		 tabHost = (TabHost) findViewById(R.id.tabhost);
@@ -57,25 +58,12 @@ public class AgentDroid extends Activity {
 	                
 	                if (net != null && net.getType() == ConnectivityManager.TYPE_WIFI){
 	                   	WifiManager wManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-	                   	List<ScanResult> scanr =  new ArrayList<ScanResult>();  
-	                   	String ssid = "";
-	                   	
-	                   	if(wManager.isWifiEnabled()){
-	                   		scanr = wManager.getScanResults();
-		                   	if (!scanr.isEmpty()){
-		                   		for (int i=0 ; i < scanr.size() ; ++i){
-		                   			ssid += scanr.get(0).SSID;	
-		                   		}
-		                   	}
-	                   	}else{
-	                   		ssid = "default";
-	                   	}
-	                   	
-	                	toast1 = Toast.makeText(getApplicationContext(),
-	                            "AgentDroid to " + ssid , Toast.LENGTH_SHORT);			
+	                   	WifiInfo wCurrent = wManager.getConnectionInfo();
+	                   	toast1 = Toast.makeText(getApplicationContext(),
+	                            "AgentDroid connected to " + wCurrent.getSSID() , Toast.LENGTH_LONG);			
 	                }else{
 	        			toast1 = Toast.makeText(getApplicationContext(),
-	                            "AgentDroid connected by other network", Toast.LENGTH_SHORT);
+	                            "AgentDroid connected to other network type", Toast.LENGTH_LONG);
 	            	}
 	    		}
 	            
