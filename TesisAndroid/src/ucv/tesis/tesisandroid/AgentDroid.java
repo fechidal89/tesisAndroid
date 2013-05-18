@@ -1,5 +1,7 @@
 package ucv.tesis.tesisandroid;
 
+import java.util.ArrayList;
+import java.util.List;
 
 import ucv.tesis.tesisandroid.R;
 
