@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="typetraps">
+	    <item>cold Start</item>
+	    <item>warm Start</item>
+	    <item>linkDown</item>
+	    <item>linkUp</item>
+	    <item>authenticationFailure</item>
+	    <item>enterpriseSpecific</item>
+	</string-array>
+</resources>
