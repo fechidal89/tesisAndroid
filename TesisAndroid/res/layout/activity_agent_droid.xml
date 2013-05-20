@@ -7,8 +7,10 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".AgentDroid" >
-
-        <TabHost
+	
+	
+    
+	<TabHost
         android:id="@+id/tabhost"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -30,8 +32,8 @@
                 android:id="@android:id/tabcontent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
-
-                <LinearLayout
+		<!-- TAB1 -->
+                <LinearLayout 
                     android:id="@+id/tab1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -93,30 +95,144 @@
          			        android:text="@string/snmp2" />
          			</RadioGroup>
 
-         			<ToggleButton
-         			    android:id="@+id/toggleButton1"
-         			    android:layout_width="wrap_content"
-         			    android:layout_height="wrap_content"
-         			    android:textOn="@string/button_ON"
-         			    android:textOff="@string/button_OFF"/>
+         			<include
+         			    android:layout_gravity="center"
+         			    layout="@layout/compound_button" />
+					         			
+                </LinearLayout>
+		<!-- TAB2 -->
+
+					<ScrollView 
+					    android:id="@+id/tab2" 
+					    android:layout_width="fill_parent" 
+					    android:layout_height="fill_parent" >
+ 					
+ 					<LinearLayout 
+ 					    android:id="@+id/layoutForScroll" 
+ 					    android:orientation="vertical"
+    					android:layout_width="fill_parent" 
+    					android:layout_height="wrap_content" >
+                    
+						<TextView
+	                        android:id="@+id/tab2TextView1"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/dtsIpAddress" />
+						
+						<EditText
+	         			    android:id="@+id/tab2editText1"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"
+	         			    android:ems="10"
+	         			    android:inputType="text" />
+						
+						<TextView
+	                        android:id="@+id/tab2TextView2"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/port" />
+						
+						<EditText
+	         			    android:id="@+id/tab2editText2"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"
+	         			    android:text="@string/portDefaultTraps"
+	         			    android:ems="10"
+	         			    android:inputType="number" />
+						
+	                    <TextView
+	                        android:id="@+id/tab2textView3"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/community" />
+	                    
+	         			<EditText
+	         			    android:id="@+id/tab2editText3"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"
+	         			    android:text="@string/communityDefault"
+	         			    android:ems="10"
+	         			    android:inputType="text" />
+	         			
+	         			<TextView
+	                        android:id="@+id/tab2textView4"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/trapType" />
+	         			
+	         			<Spinner
+						    android:id="@+id/tab2Spinner1"
+						    android:layout_width="match_parent"
+						    android:layout_height="wrap_content"
+						    android:drawSelectorOnTop= "true" />
+	         			
+	         			
+	         			<TextView
+	                        android:id="@+id/tab2textView6"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/enterpriseOID" />
+	                    
+	         			<EditText
+	         			    android:id="@+id/tab2editText5"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"
+	         			    android:ems="10"
+	         			    android:inputType="text" />
+	         			
+	         			<TextView
+	                        android:id="@+id/tab2textView5"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/specificTrap"
+	                        android:visibility="gone" />
+	                    
+	         			<EditText
+	         			    android:id="@+id/tab2editText4"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"         			    
+	         			    android:ems="10" 
+	         			    android:inputType="text"
+	         			    android:visibility="gone" />
+	         			
+	         			<TextView
+	                        android:id="@+id/tab2textView7"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/retries" />
+	                    
+	         			<EditText
+	         			    android:id="@+id/tab2editText6"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"
+	         			    android:ems="10"
+	         			    android:text="@string/retriesDefault"
+	         			    android:inputType="number" />
+	         			
+	         			<TextView
+	                        android:id="@+id/tab2textView8"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/timeOut" />
+	                    
+	         			<EditText
+	         			    android:id="@+id/tab2editText7"
+	         			    android:layout_width="match_parent"
+	         			    android:layout_height="wrap_content"
+	         			    android:ems="10"
+	         			    android:text="@string/timeOutDefault"
+	         			    android:inputType="number" />
+	         			
+	         			<Button
+	                        android:id="@+id/tab2button1"
+	                        android:layout_width="wrap_content" 
+	                        android:layout_height="0dip"
+	                        android:layout_weight="1"
+	                        android:text="@string/bTraps" />
+					</LinearLayout>
+					</ScrollView>
                 
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/tab2"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical" >
-
-                    <Button
-                        android:id="@+id/button1"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dip"
-                        android:layout_weight="1"
-                        android:text="@string/bTraps" />
-
-                </LinearLayout>
-
+		<!-- TAB3 -->
                 <LinearLayout
                     android:id="@+id/tab3"
                     android:layout_width="match_parent"
@@ -124,12 +240,79 @@
 					android:orientation="vertical" >
                     
                     <TextView
-                        android:id="@+id/textView4"
+                        android:id="@+id/tab3textView0"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/systemGroup" />
+                    
+                    <TextView
+                        android:id="@+id/tab3textView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysDescr" />
+                    <TextView
+                        android:id="@+id/tab3textView2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysObjectID" />
 
-                </LinearLayout>
+                    <TextView
+                        android:id="@+id/tab3textView3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysUpTime" />
+                    
+                    <TextView
+                        android:id="@+id/tab3textView4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysContact" />
+                    <!-- SysContac -->
+         			<EditText 
+         			    android:id="@+id/tab3editText1"
+         			    android:layout_width="match_parent"
+         			    android:layout_height="wrap_content"
+         			    android:ems="10"
+         			    android:text="@string/valueNull"
+         			    android:inputType="text" />
+
+                    <TextView
+                        android:id="@+id/tab3textView5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysName" />
+                    
+                    <!-- SysName -->
+         			<EditText 
+         			    android:id="@+id/tab3editText2"
+         			    android:layout_width="match_parent"
+         			    android:layout_height="wrap_content"
+         			    android:ems="10"
+         			    android:text="@string/valueNull"
+         			    android:inputType="text" />
+                    
+                    <TextView
+                        android:id="@+id/tab3textView6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysLocation" />
+                    
+                    <!-- SysLocation -->
+         			<EditText 
+         			    android:id="@+id/tab3editText3"
+         			    android:layout_width="match_parent"
+         			    android:layout_height="wrap_content"
+         			    android:ems="10"
+         			    android:text="@string/valueNull"
+         			    android:inputType="text" />
+                    
+                    <TextView
+                        android:id="@+id/tab3textView7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sysServices" />
+                    
+             </LinearLayout>
             </FrameLayout>
         </LinearLayout>
     </TabHost>
