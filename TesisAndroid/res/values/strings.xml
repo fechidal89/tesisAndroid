@@ -17,15 +17,46 @@
     <string name="version">Version:</string>
     <string name="snmp1">SNMPv1</string>
     <string name="snmp2">SNMPv2c</string>
-    <string name="button_ON">Service SNMP ON</string>
-    <string name="button_OFF">Service SNMP OFF</string>
+    <string name="switchService">Service SNMP:</string>
+    <string name="snmpServiceOn">Service SNMP ON</string>
+    <string name="snmpServiceOff">Service SNMP OFF</string>
+    <string name="enterpriseOID">Enterprise OID:</string>
+    <string name="retries">Retries:</string>
+    <string name="retriesDefault">3</string>
+    <string name="timeOut">TimeOut (ms):</string>
+    <string name="timeOutDefault">1500</string>
+    
     
     
     <!-- TAB 2 - Service Send Traps  -->
+    <string name="dtsIpAddress">Destination IP Address:</string>
+    <!-- 
+    <string name="port">Port:</string> 
+    -->
+    <string name="portDefaultTraps">162</string>
+    <!-- 
+    <string name="community">Community:</string>
+    <string name="communityDefault">Public</string>
+     -->
+    <string name="trapType">Trap Type:</string>
+    <string name="specificTrap">Specific Trap:</string>
     <string name="bTraps">Send Trap</string>
     
+    
+    
     <!-- TAB 3 - System Group  -->
-    <string name="systemGroup">System Group:</string>
+    <string name="valueNull">null</string>
+    
+    <string name="systemGroup">System Group (.1.3.6.1.2.1.1):</string>
+    <string name="sysDescr">sysDescr (.1):</string>
+    <string name="sysObjectID">sysObjectID (.2):</string>
+    <string name="sysUpTime">sysUpTime (.3):</string>
+    <string name="sysContact">sysContact (.4):</string>
+    <string name="sysName">sysName (.5):</string>
+    <string name="sysLocation">sysLocation (.6):</string>
+    <string name="sysServices">sysServices (.7):</string>
+    
+    
         
 
 </resources>
