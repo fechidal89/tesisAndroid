@@ -47,7 +47,7 @@ import java.util.*;
 public class SNMPv1AgentInterface
                     implements Runnable
 {
-    public static final int SNMP_PORT = 161;
+    public static final int SNMP_PORT = 3000;
     
     // largest size for datagram packet payload; based on
     // RFC 1157, need to handle messages of at least 484 bytes
@@ -196,6 +196,7 @@ public class SNMPv1AgentInterface
     {
         // interrupt receive thread so it will die a natural death
         receiveThread.interrupt();
+        dSocket.close();
     }
 
     
