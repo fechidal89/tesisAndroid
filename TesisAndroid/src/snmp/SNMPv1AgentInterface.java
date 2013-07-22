@@ -1,4 +1,7 @@
+package snmp;
 /*
+ * 
+ * 
  * SNMP Package
  *
  * Copyright (C) 2004, Jonathan Sevy <jsevy@mcs.drexel.edu>
@@ -28,12 +31,12 @@
  */
 
 
-package snmp;
+
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
-
+import ucv.tesis.tesisandroid.Mibs;
 
 /**
 *    The class SNMPv1AgentInterface implements an interface for responding to requests sent from a remote SNMP 
@@ -47,7 +50,7 @@ import java.util.*;
 public class SNMPv1AgentInterface
                     implements Runnable
 {
-    public static final int SNMP_PORT = 3000;
+    public static final int SNMP_PORT = 1161;
     
     // largest size for datagram packet payload; based on
     // RFC 1157, need to handle messages of at least 484 bytes
@@ -137,7 +140,7 @@ public class SNMPv1AgentInterface
     
     
     
-    public void addRequestListener(SNMPRequestListener listener)
+    public void addRequestListener(Mibs listener)
     {
         // see if listener already added; if so, ignore
         for (int i = 0; i < listenerVector.size(); i++)
@@ -154,7 +157,7 @@ public class SNMPv1AgentInterface
     
     
     
-    public void removeRequestListener(SNMPRequestListener listener)
+    public void removeRequestListener(Mibs listener)
     {
         // see if listener in list; if so, remove, if not, ignore
         for (int i = 0; i < listenerVector.size(); i++)
@@ -269,7 +272,7 @@ public class SNMPv1AgentInterface
                         // pass the received PDU and community name to any registered listeners
                         for (int i = 0; i < listenerVector.size(); i++)
                         {
-                            SNMPRequestListener listener = (SNMPRequestListener)listenerVector.elementAt(i);
+                            Mibs listener = (Mibs)listenerVector.elementAt(i);
                             
                             // return value is sequence of variable pairs for those OIDs handled by the listener
                             SNMPSequence handledVarList = listener.processRequest(receivedPDU, communityName);
@@ -324,7 +327,7 @@ public class SNMPv1AgentInterface
                         // pass the received PDU and community name to any registered listeners
                         for (int i = 0; i < listenerVector.size(); i++)
                         {
-                            SNMPRequestListener listener = (SNMPRequestListener)listenerVector.elementAt(i);
+                            Mibs listener = (Mibs)listenerVector.elementAt(i);
                             
                             // return value is sequence of nested variable pairs for those OIDs handled by the listener:
                             // consists of (supplied OID, (following OID, value)) nested variable pairs
