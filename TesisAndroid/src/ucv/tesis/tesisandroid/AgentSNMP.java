@@ -10,6 +10,7 @@ import android.widget.Toast;
 public class AgentSNMP extends Service {
 	
 	SNMPv1AgentInterface agent = null;
+	Mibs MIB = new Mibs();
 	private final IBinder myBinder = new LocalBinder();
 	
 	
@@ -19,6 +20,7 @@ public class AgentSNMP extends Service {
 	public void onCreate(){
 		try {
 			this.agent = new SNMPv1AgentInterface(1);
+			this.agent.addRequestListener(MIB);
 			this.agent.startReceiving();
 		} catch (Exception e) {
 			// TODO: handle exception
