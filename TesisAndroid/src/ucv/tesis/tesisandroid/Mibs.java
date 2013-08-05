@@ -2,7 +2,6 @@ package ucv.tesis.tesisandroid;
 
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 
 import snmp.SNMPBERCodec;
 import snmp.SNMPBadValueException;
+import snmp.SNMPGauge32;
 import snmp.SNMPGetException;
 import snmp.SNMPInteger;
 import snmp.SNMPObject;
@@ -95,9 +95,7 @@ public class Mibs implements SNMPRequestListener {
                 continue;
             }*/
             
-            // we'll only respond to requests for OIDs 1.3.6.1.2.1.99.0 and 1.3.6.1.2.1.100.0 
             
-            // OID 1.3.6.1.2.1.99.0: it's read-only
             if (snmpOID.toString().equals("1.3.6.1.2.1.1.4.0"))
             {
                 if (pduType == SNMPBERCodec.SNMPSETREQUEST)
@@ -244,6 +242,11 @@ public class Mibs implements SNMPRequestListener {
 							    }
 					        }
 					        
+					        p = Runtime.getRuntime().exec("cat /proc/sys/net/ipv4/ip_default_ttl"+"\n");
+							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+					        System.out.println("DEFAUL_TTL_IPv4 => "+in2.readLine()); 
+				            
+					        
 					        p.destroy();
 					        
 					    } catch (Exception e) {
@@ -261,6 +264,422 @@ public class Mibs implements SNMPRequestListener {
                 } 
                     
             }
+            
+            
+            // ifEntry Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.1.X -> es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.1."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf =0; // numero de interfaces
+                 	String cmd="ls /sys/class/net/"; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						BufferedReader in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						
+					    while (in2.readLine() != null) {  
+					    	nIf += 1;  					        	
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					} catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(eth));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	
+                	
+                } 
+                
+            } // ifEntry
+            
+         // ifDescr DisplayString | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.2.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.2."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf =0; // numero de interfaces
+                 	String cmd="ls /sys/class/net/"; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						BufferedReader in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						String line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					} catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(arrIf.get(eth-1).toString()));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                
+            } // ifDescr
+            
+            
+            // ifType Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.3.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.3."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf =0; // numero de interfaces
+                 	String cmd="ls /sys/class/net/"; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						BufferedReader in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						String line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					} catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta, busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {   
+	                    	SNMPVariablePair newPair;
+	                    	if(arrIf.get(eth-1).toString().equalsIgnoreCase("lo")||
+	                    	   arrIf.get(eth-1).toString().equalsIgnoreCase("lo0")|| // soporte a varias Loopback
+	                    	   arrIf.get(eth-1).toString().equalsIgnoreCase("lo1")){
+	                        	newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(24));		                        
+	                    	}else{
+	                    		newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(1));		                        		                    		
+	                    	}
+	                    	responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	// TODO: handle exception
+							e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                
+            } // ifType
+            
+            // ifMtu Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.4.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.4."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf=0; // numero de interfaces
+                	int mtu=0; // Max Trafer Unit 
+                 	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					BufferedReader in2=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);					    	
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta, busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/mtu\n";
+	                    	p = Runtime.getRuntime().exec(cmd);
+							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							mtu = Integer.parseInt(in2.readLine());
+	                    	
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(mtu));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	// TODO: handle exception
+							e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                
+            } // ifMtu
+            
+            
+         // ifSpeed Gauge | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.5.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.5."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf=0; // numero de interfaces
+                	int speed=0; // bandwidth bits per second
+                 	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					BufferedReader in2=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);					    	
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta, busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/speed\n";
+	                    	p = Runtime.getRuntime().exec(cmd);
+							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							line = in2.readLine();
+							if(line == null) speed = 0;
+							else speed = Integer.parseInt(line);
+	                    	
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPGauge32(speed));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	// TODO: handle exception	                    	
+							e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                
+            } // ifSpeed
+            
+            
+         // ifPhysAddress PhysAddress | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.6.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.6."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf=0; // numero de interfaces
+                	String address=""; // PhysAddress
+                 	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					BufferedReader in2=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);					    	
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta, busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/address\n";
+	                    	p = Runtime.getRuntime().exec(cmd);
+							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							address = in2.readLine();
+							
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(address));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	// TODO: handle exception	                    	
+							e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                
+            } // ifPhysAddress
+            
+            
             
         } // for
         
