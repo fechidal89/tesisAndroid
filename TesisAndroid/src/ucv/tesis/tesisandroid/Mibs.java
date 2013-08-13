@@ -1718,7 +1718,147 @@ public class Mibs implements SNMPRequestListener {
                 	                	
                 } 
                 
-            } // ifOutErrors
+            } // ifOutQLen
+            
+            
+            /******************************
+            *
+            *   MIB-II | the Address Translation Group
+            * 
+            ******************************/
+            
+            /******************************
+            *
+            *   MIB-II | the IP Group
+            * 
+            ******************************/
+            
+            // ipForwarding | Integer | Read-Write | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.1.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/sys/net/ipv4/ip_forward\n";
+                	int forward = 0; // 0 false | 1 true -> forwarding
+                	Process p=null;
+					BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						forward=Integer.parseInt(in2.readLine());					    	
+					    
+                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(forward));
+                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                } 
+                
+            } // ipForwarding
+            
+         // ipDefaultTTL | Integer | Read-Write | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.2.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/sys/net/ipv4/ip_default_ttl\n";
+                	int ttl = 0; // deafult_ttl
+                	Process p=null;
+					BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						ttl=Integer.parseInt(in2.readLine());					    	
+					    
+                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(ttl));
+                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                } 
+                
+            } // ipDefaultTTL
+            
+            
+            // PRUEBAAA 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.3.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = ""; // deafult_ttl
+                	Process p=null;
+					BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						
+						while ((line =in2.readLine()) != null) {
+							System.out.println(line);
+						}
+						
+                        //SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(ttl));
+                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
+                        //responseList.addSNMPObject(newPair);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                } 
+                
+            } // PRUEBAAA 
+            
+            
+            
             
         } // for
         
