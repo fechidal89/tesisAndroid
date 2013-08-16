@@ -4,6 +4,7 @@ package ucv.tesis.tesisandroid;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 
@@ -1748,28 +1749,44 @@ public class Mibs implements SNMPRequestListener {
                 }
                 else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
                 {
-                	String cmd="cat /proc/sys/net/ipv4/ip_forward\n";
-                	int forward = 0; // 0 false | 1 true -> forwarding
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
                 	Process p=null;
-					BufferedReader in2=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
 
                 	try
                     {
                 		p = Runtime.getRuntime().exec(cmd);
-						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						forward=Integer.parseInt(in2.readLine());					    	
-					    
-                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(forward));
-                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "Forwarding";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long forw = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(forw));
                         responseList.addSNMPObject(newPair);
-                    }
-                    catch (SNMPBadValueException e)
-                    {
-                        // won't happen...
-                    }catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
                 } 
                 
             } // ipForwarding
@@ -1789,34 +1806,50 @@ public class Mibs implements SNMPRequestListener {
                 }
                 else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
                 {
-                	String cmd="cat /proc/sys/net/ipv4/ip_default_ttl\n";
-                	int ttl = 0; // deafult_ttl
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
                 	Process p=null;
-					BufferedReader in2=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
 
                 	try
                     {
                 		p = Runtime.getRuntime().exec(cmd);
-						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						ttl=Integer.parseInt(in2.readLine());					    	
-					    
-                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(ttl));
-                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "DefaultTTL";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long ttl = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(ttl));
                         responseList.addSNMPObject(newPair);
-                    }
-                    catch (SNMPBadValueException e)
-                    {
-                        // won't happen...
-                    }catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
                 } 
                 
             } // ipDefaultTTL
             
             
-            // PRUEBAAA 
+         // ipInReceives | Counter | Read-Only | Mandatory |
             if (snmpOID.toString().equals("1.3.6.1.2.1.4.3.0"))
             {
                 if (pduType == SNMPBERCodec.SNMPSETREQUEST)
@@ -1832,32 +1865,3388 @@ public class Mibs implements SNMPRequestListener {
                 else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
                 {
                 	String cmd="cat /proc/net/snmp\n";
-                	String line = ""; // deafult_ttl
+                	String line = "";
                 	Process p=null;
-					BufferedReader in2=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
 
                 	try
                     {
                 		p = Runtime.getRuntime().exec(cmd);
-						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						
-						while ((line =in2.readLine()) != null) {
-							System.out.println(line);
-						}
-						
-                        //SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(ttl));
-                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
-                        //responseList.addSNMPObject(newPair);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                } 
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InReceives";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
                 
-            } // PRUEBAAA 
+            } // ipInReceives 
+            
+            // ipInHdrErrors | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.4.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InHdrErrors";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipInHdrErrors 
             
             
+            // ipInAddrErrors | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.5.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InAddrErrors";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipInAddrErrors 
+            
+            
+         // ipForwDatagrams | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.6.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "ForwDatagrams";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipForwDatagrams 
+            
+         // ipInUnknownProtos | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.7.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InUnknownProtos";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipInUnknownProtos 
+      
+            
+         // ipInDiscards | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.8.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InDiscards";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipInDiscards 
+            
+            
+            // ipInDelivers | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.9.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InDelivers";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipInDelivers 
+            
+            
+            // ipOutRequests | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.10.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutRequests";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipOutRequests
+            
+            
+            // ipOutDiscards | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.11.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutDiscards";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipOutDiscards
+            
+            
+            // ipOutNoRoutes | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.12.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutNoRoutes";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipOutNoRoutes
+            
+            
+            // ipReasmTimeout | Integer | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.13.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "ReasmTimeout";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipReasmTimeout
+            
+            
+         // ipReasmReqds | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.14.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "ReasmReqds";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipReasmReqds
+            
+            
+            // ipReasmOKs | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.15.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "ReasmOKs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipReasmOKs
+            
+            
+            // ipReasmFails | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.16.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "ReasmFails";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipReasmFails
+            
+            // ipFragOKs | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.17.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "FragOKs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipFragOKs
+            
+         // ipFragFails | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.18.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "FragFails";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipFragFails
+            
+         // ipFragCreates | Counter | Read-Only | Mandatory |
+            if (snmpOID.toString().equals("1.3.6.1.2.1.4.19.0"))
+            {
+
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "FragCreates";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(0).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(1).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				System.out.println(stra);
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                     }
+                     catch (SNMPBadValueException e)
+                     {
+                         // won't happen...
+	                 }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // ipFragCreates
+            
+            
+            /**
+             * 
+             * the ICMP Group
+             * 
+             */
+            
+            // icmpInMsgs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.1.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InMsgs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInMsgs
+            
+         // icmpInErrors | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.2.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InErrors";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInErrors
+            
+            
+            // icmpInDestUnreachs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.3.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InDestUnreachs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInDestUnreachs
+            
+            
+         // icmpInTimeExcds | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.4.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InTimeExcds";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInTimeExcds
+            
+            
+            // icmpInParmProbs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.5.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InParmProbs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInParmProbs
+            
+            
+         // icmpInSrcQuenchs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.6.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InSrcQuenchs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInSrcQuenchs
+            
+            
+         // icmpInRedirects | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.7.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InRedirects";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInRedirects
+            
+            // icmpInEchos | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.8.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InEchos";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInEchos
+            
+            // icmpInEchoReps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.9.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InEchoReps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInEchoReps
+            
+            
+            // icmpInTimestamps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.10.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InTimestamps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInTimestamps
+            
+            
+            // icmpInTimestampReps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.11.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InTimestampReps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInTimestampReps
+            
+            
+            // icmpInAddrMasks | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.12.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InAddrMasks";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInAddrMasks
+            
+            
+         // icmpInAddrMaskReps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.13.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InAddrMaskReps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpInAddrMaskReps
+            
+            
+            // icmpOutMsgs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.14.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutMsgs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutMsgs
+            
+            
+         // icmpOutErrors | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.15.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutErrors";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutErrors
+            
+            
+            // icmpOutDestUnreachs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.16.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutDestUnreachs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutDestUnreachs
+            
+            
+         // icmpOutTimeExcds | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.17.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutTimeExcds";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutTimeExcds
+            
+            
+            // icmpOutParmProbs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.18.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutParmProbs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutParmProbs
+            
+            
+            // icmpOutSrcQuenchs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.19.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutSrcQuenchs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutSrcQuenchs
+            
+            
+            // icmpOutRedirects | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.20.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutRedirects";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutRedirects
+            
+            // icmpOutEchos | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.21.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutEchos";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutEchos
+            
+            
+         // icmpOutEchoReps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.22.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutEchoReps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutEchoReps
+            
+            
+            // icmpOutTimestamps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.23.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutTimestamps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutTimestamps
+            
+            
+            // icmpOutTimestampReps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.24.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutTimestampReps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutTimestampReps
+            
+            // icmpOutAddrMasks | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.25.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutAddrMasks";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutAddrMasks
+            
+            
+            // icmpOutAddrMaskReps | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.5.26.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutAddrMaskReps";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(2).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(3).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			long recv = Long.parseLong( arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // icmpOutAddrMaskReps
+            
+            /**
+             * 
+             * the TCP Group 
+             *
+             */
+            
+            // tcpRtoAlgorithm | Integer | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.1.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "RtoAlgorithm";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			int recv = Integer.parseInt(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpRtoAlgorithm
+            
+            // tcpRtoMin | Integer | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.2.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "RtoMin";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			int recv = Integer.parseInt(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpRtoMin
+            
+            
+            // tcpRtoMax | Integer | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.3.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "RtoMax";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			int recv = Integer.parseInt(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpRtoMax
+            
+            
+            // tcpMaxConn | Integer | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.4.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "MaxConn";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			int recv = Integer.parseInt(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpMaxConn
+            
+            
+            // tcpActiveOpens | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.5.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "ActiveOpens";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpActiveOpens
+            
+            
+            // tcpPassiveOpens | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.6.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "PassiveOpens";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpPassiveOpens
+            
+            
+            // tcpAttemptFails | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.7.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "AttemptFails";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpAttemptFails
+            
+            
+            // tcpEstabResets | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.8.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "EstabResets";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpEstabResets
+            
+            
+            // tcpCurrEstab | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.9.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "CurrEstab";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpCurrEstab
+            
+            
+            // tcpInSegs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.10.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InSegs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpInSegs
+            
+            
+            // tcpOutSegs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.11.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutSegs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpOutSegs
+            
+            
+            // tcpRetransSegs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.12.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "RetransSegs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpRetransSegs
+            
+            
+            /**
+             * 
+             * the tcp connection table FALTA!
+             * 
+             */
+            
+            // tcpInErrs | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.14.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InErrs";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpInErrs
+            
+            
+            // tcpOutRsts | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.6.15.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutRsts";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(6).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(7).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // tcpOutRsts
+            
+            
+            /**
+             * 
+             * the UDP Group
+             * 
+             */
+            
+            // udpInDatagrams | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.7.1.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InDatagrams";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(8).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(9).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // udpInDatagrams
+            
+            // udpNoPorts | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.7.2.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "NoPorts";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(8).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(9).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // udpNoPorts
+            
+            
+            // udpInErrors | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.7.3.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "InErrors";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(8).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(9).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // udpInErrors
+            
+            
+            // udpOutDatagrams | Counter | Read-Only | Mandatory 
+            if (snmpOID.toString().equals("1.3.6.1.2.1.7.4.0"))
+            {
+            	
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/snmp\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+
+            			ArrayList<String> arrValue = new ArrayList<String>(), arrName = new ArrayList<String>();
+            			String value = "OutDatagrams";
+            			arrName= new ArrayList<String>(Arrays.asList(lines.get(8).split(" "))); // IP Names
+            			arrValue= new ArrayList<String>(Arrays.asList(lines.get(9).split(" "))); // IP Values
+            			int pos = 0;
+            			for (String stra : arrName) {
+            				if(stra.equalsIgnoreCase(value)) break;
+            				else pos++;
+            			}
+            			
+            			Long recv = Long.parseLong(arrValue.get(pos));
+            			SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(recv));
+                        responseList.addSNMPObject(newPair);
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+            } // udpOutDatagrams
             
             
         } // for
