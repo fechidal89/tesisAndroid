@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 
 
@@ -4913,12 +4914,64 @@ public class Mibs implements SNMPRequestListener {
                 
             } // tcpRetransSegs
             
+            /** the TCP Connection Table */
             
-            /**
-             * 
-             * the tcp connection table FALTA!
-             * 
-             */
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1."))
+            {
+            	
+            	if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1.1"))
+                {
+            		String cmd="netstat\n", line, oidConn="";
+            		Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			/* Comienzo en 1 para saltar esta linea:
+            			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+            			 */
+    		
+						String matNetstat[][] = new String[lines.size()-1][6];
+
+            			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+            			
+            			for (int j = 0; j < matNetstat.length; j++) {
+							
+            				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+            					String arr[] = matNetstat[j][3].split(":");
+								oidConn = arr[arr.length-2]+"."+ arr[arr.length-1]; 
+								arr = matNetstat[j][4].split(":");
+								oidConn += "."+arr[arr.length-2]+"."+ arr[arr.length-1]; 
+            				}
+	            				System.out.println(oidConn);
+						}
+            			
+                    }
+            		catch (Exception e)
+   	                {
+   	                	 e.printStackTrace();
+   	                }
+            		
+                }
+                	
+            	
+            	
+            }
+            
             
             // tcpInErrs | Counter | Read-Only | Mandatory 
             if (snmpOID.toString().equals("1.3.6.1.2.1.6.14.0"))
@@ -5247,6 +5300,7 @@ public class Mibs implements SNMPRequestListener {
                 }
                 
             } // udpOutDatagrams
+            
             
             
         } // for
