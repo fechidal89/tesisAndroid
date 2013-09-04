@@ -14,7 +14,9 @@ import snmp.SNMPBadValueException;
 import snmp.SNMPCounter32;
 import snmp.SNMPGauge32;
 import snmp.SNMPGetException;
+import snmp.SNMPIPAddress;
 import snmp.SNMPInteger;
+import snmp.SNMPNSAPAddress;
 import snmp.SNMPObject;
 import snmp.SNMPObjectIdentifier;
 import snmp.SNMPOctetString;
@@ -2831,7 +2833,520 @@ public class Mibs implements SNMPRequestListener {
                 
             } // ipFragCreates
             
+            /**
+             * 
+             *  the IP Address Table
+             *  ipAddrTable 1.3.6.1.2.1.4.20
+             *  
+             * */
+         
+            if (snmpOID.toString().startsWith(("1.3.6.1.2.1.4.20.1.")))
+            {
+            	String cmd="ip address show"+"\n";
+            	String line = ""; // deafult_ttl
+            	Process p=null;
+            	ArrayList<String> lines = new ArrayList<String>();
+        		BufferedReader in2=null;
+
+            	try
+                {
+            		p = Runtime.getRuntime().exec(cmd);
+        			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        			
+        			while ((line =in2.readLine()) != null) {
+        				lines.add(line);
+        			}
+
+        			String ifIndex;
+        			int x = 0;
+        			String cadena = "";
+        			cadena = lines.get(x);
+        			ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
+        			while ( x < lines.size()) {
+
+        				if(cadena.contains("mtu") && cadena.contains("qdisc") && cadena.contains("state") ){
+
+        					String arrTmp[] = cadena.split(" ");
+        					ifIndex = arrTmp[0].substring(0, arrTmp[0].length()-1);
+        					
+        					do{
+        						
+        						if(!cadena.contains("inet6") && cadena.contains("inet")){
+
+                					arrTmp = cadena.split(" ");	
+                					
+                					String arrTmp1[] = arrTmp[5].split("/");
+                					String ipAddr = arrTmp1[0], strMask = arrTmp1[1] ;
+                					int mask = Integer.parseInt(strMask);
+                					
+                						if (mask <= 8){
+                							strMask = (256 - (Math.pow(2,(8 - mask)))) + ".0.0";
+                						}else if (mask <= 16){
+                							strMask =  "255." + (256 - (Math.pow(2,(16 - mask)))) +".0";
+                						}else if (mask <= 24){
+                							strMask =  "255.255." + (256 - (Math.pow(2,(24 - mask))));
+                						}else if (mask <= 32){
+                							strMask = "255.255.255." + (256 - (Math.pow(2,(32 - mask))));
+                						}	
+                						
+                						ArrayList<String> rowTable = new ArrayList<String>();
+                						rowTable.add(ipAddr);
+                						rowTable.add(ifIndex);
+                						rowTable.add(strMask);
+                						System.out.println(strMask);
+                						rowTable.add("1"); //BroadCast
+                						rowTable.add("65535"); //
+                						
+                						table.add(rowTable);
+                				}
+        						x++;
+        						if (x >= lines.size()) break; 
+        						cadena = lines.get(x);
+        					}while(!(cadena.contains("mtu") && cadena.contains("qdisc") && cadena.contains("state")));
+        					
+        				} // if
+        				
+        			} // while ( x < lines.size()) {
+        			
+        			for (int j = 0; j < table.size(); j++) {
+        				ArrayList<String> arrElement = table.get(j);
+        				
+        				// ipAdEntAddr | IpAddress | Read-Only | Mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.20.1.1."+arrElement.get(0)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(arrElement.get(0)));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    }
+	        	            }
+        				}// ipAdEntAddr
+        				
+        				// ipAdEntIfIndex | Integer | Read-Only | Mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.20.1.2."+arrElement.get(0)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(arrElement.get(1))));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    }
+	        	            }
+        				}// ipAdEntIfIndex
+        				
+        				// ipAdEntNetMask | IpAddress | Read-Only | Mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.20.1.3."+arrElement.get(0)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+        	                		System.out.println(arrElement.get(2));
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(arrElement.get(2)));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    	e.printStackTrace();
+	    	                    }
+	        	            }
+        				}// ipAdEntNetMask
+        				
+        				// ipAdEntBcastAddr | Integer | Read-Only | Mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.20.1.4."+arrElement.get(0)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(arrElement.get(3))));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    }
+	        	            }
+        				}// ipAdEntBcastAddr
+        				
+        				// ipAdEntBcastAddr | Integer | Read-Only | Mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.20.1.5."+arrElement.get(0)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(arrElement.get(4))));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    }
+	        	            }
+        				}// ipAdEntBcastAddr
+						
+					} 
+        			
+        			
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            	
+            }
             
+            
+            /**
+             * 
+             *  the IP Routing Table
+             *  ipAddrTable 1.3.6.1.2.1.4.21
+             *  
+             * */
+         
+            if (snmpOID.toString().startsWith(("1.3.6.1.2.1.4.21.1.")))
+            {	//  0        1         2      3     4     5     6    7    8    9     10
+            	//Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
+	            	
+            	if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	String cmd="cat /proc/net/route\n";
+                	String line = "";
+                	Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			
+            			for(int x = 1 ; x < lines.size() ; x++){
+							String arrTmp[] = lines.get(x).split("\t");
+							String hexValue = arrTmp[1];
+							String ip = "";
+						
+							for(int i1 = hexValue.length(); i1 > 0; i1 = i1 - 2) {
+							    ip = ip + Integer.valueOf(hexValue.substring(i1-2, i1 ), 16) + ".";
+							}
+							ip= (ip.substring(0, ip.length()-1));
+							// ipRouteDest | ipAddress | Read-Write | Mandatory
+							if (snmpOID.toString().equals(("1.3.6.1.2.1.4.21.1.1."+ip)))
+			                {
+								SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ip));
+		                        responseList.addSNMPObject(newPair);
+		                        
+		                    // ipRouteIfIndex | Integer | Read-Write | Mandatory
+			                }else if (snmpOID.toString().equals(("1.3.6.1.2.1.4.21.1.2."+ip)))
+			                {
+			                	cmd="ls /sys/class/net/";;
+			                	line = "";
+			                	int iFace=1;
+			                	try
+			                    {
+			                		p = Runtime.getRuntime().exec(cmd);
+			            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			            			
+			            			while ((line =in2.readLine()) != null) {
+			            				if(line.equals(arrTmp[0])){
+			            					break;
+			            				}
+			            				iFace++;
+			            			}
+			            		}catch (Exception e)
+				                 {
+				                	 e.printStackTrace();
+				                 }
+			                	
+								SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(iFace));
+		                        responseList.addSNMPObject(newPair);
+		                        
+		                    // ipRouteMetric1 | Integer | Read-Write | Mandatory
+			                }else if (snmpOID.toString().equals(("1.3.6.1.2.1.4.21.1.3."+ip)))
+			                {
+			                	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(arrTmp[6])));
+		                        responseList.addSNMPObject(newPair);
+		                    // ipRouteNextHop | ipAddress | Read-Write | Mandatory    
+			                }else if (snmpOID.toString().equals(("1.3.6.1.2.1.4.21.1.4."+ip)))
+			                {
+			                	hexValue = arrTmp[2];
+								ip = "";
+							
+								for(int i1 = hexValue.length(); i1 > 0; i1 = i1 - 2) {
+								    ip = ip + Integer.valueOf(hexValue.substring(i1-2, i1 ), 16) + ".";
+								}
+								ip= (ip.substring(0, ip.length()-1));
+			                	
+								SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ip));
+		                        responseList.addSNMPObject(newPair);
+		                    // ipRouteMask | ipAddress | Read-Write | Mandatory    
+			                }else if (snmpOID.toString().equals(("1.3.6.1.2.1.4.21.1.5."+ip)))
+			                {
+			                	hexValue = arrTmp[7];
+								ip = "";
+							
+								for(int i1 = hexValue.length(); i1 > 0; i1 = i1 - 2) {
+								    ip = ip + Integer.valueOf(hexValue.substring(i1-2, i1 ), 16) + ".";
+								}
+								ip= (ip.substring(0, ip.length()-1));
+			                	
+								SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ip));
+		                        responseList.addSNMPObject(newPair);
+			                }
+							
+						}
+                        
+                     }
+	                 catch (Exception e)
+	                 {
+	                	 e.printStackTrace();
+	                 }
+                }
+                
+                
+            }
+            
+            
+            
+            /**
+             * 
+             *  the IP Address Translation table
+             *  ipAddrTable 1.3.6.1.2.1.4.22
+             *  
+             * */
+         
+            if (snmpOID.toString().startsWith(("1.3.6.1.2.1.4.22.1.")))
+            {
+            	// ipNetToMediaIfIndex 
+            	String cmd="ip address show"+"\n";
+            	String line = ""; // deafult_ttl
+            	Process p=null;
+            	ArrayList<String> lines = new ArrayList<String>();
+        		BufferedReader in2=null;
+
+            	try
+                {
+            		p = Runtime.getRuntime().exec(cmd);
+        			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        			
+        			while ((line =in2.readLine()) != null) {
+        				lines.add(line);
+        			}
+
+        			String ifIndex="",cadena="",phyIFace="";
+        			int x = 0;
+        			cadena = lines.get(x);
+        			ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
+        			
+        			while ( x < lines.size()) {
+
+        				if(cadena.contains("mtu") && cadena.contains("qdisc") && cadena.contains("state") ){
+
+        					String arrTmp[] = cadena.split(" ");
+        					ifIndex = arrTmp[0].substring(0, arrTmp[0].length()-1);
+        					
+        					do{
+        						
+        						if(cadena.contains("link/ether") || cadena.contains("link/loopback")){ /*|| cadena.contains("link/ppp") ||
+        						   cadena.contains("link/tunnel6") || cadena.contains("link/sit") ||
+        						   cadena.contains("link/loopback") ){ // si y solo si se puede colocar la ip 127.0.0.1*/
+        							arrTmp = cadena.split(" ");
+        							phyIFace = arrTmp[5];
+        						}
+        						
+        						if(!cadena.contains("inet6") && cadena.contains("inet")){
+
+                					arrTmp = cadena.split(" ");	
+                					
+                					String arrTmp1[] = arrTmp[5].split("/");
+                					String ipAddr = arrTmp1[0];	
+                						
+                						ArrayList<String> rowTable = new ArrayList<String>();
+                						rowTable.add(ifIndex); // 0
+                						rowTable.add(phyIFace);// 1
+                						rowTable.add(ipAddr);  // 2
+                						rowTable.add("1");     // 3  Other always 
+                						
+                						table.add(rowTable);
+                				}
+        						x++;
+        						if (x >= lines.size()) break; 
+        						cadena = lines.get(x);
+        					}while(!(cadena.contains("mtu") && cadena.contains("qdisc") && cadena.contains("state")));
+        					
+
+        				} // if
+        				
+        			} // while ( x < lines.size()) {
+        			
+        			for (int j = 0; j < table.size(); j++){
+        				ArrayList<String> arrElement = table.get(j);
+        				
+        				// ipNetToMediaIfIndex | INTEGER | read-write | mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.22.1.1."+arrElement.get(2)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(arrElement.get(0))));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    }
+	        	            }
+        				}// ipNetToMediaIfIndex
+        				
+        				// ipNetToMediaPhysAddress  | PhysAddress | read-write | mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.22.1.2."+arrElement.get(2)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(arrElement.get(1)));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                    	e.printStackTrace();
+	    	                    }
+	        	            }
+        				}// ipNetToMediaPhysAddress 
+        				
+        				// ipNetToMediaNetAddress   | PhysAddress | read-write | mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.22.1.3."+arrElement.get(2)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()),new SNMPIPAddress(arrElement.get(2))); 
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        e.printStackTrace();
+	    	                    }
+	        	            }
+        				}// ipNetToMediaNetAddress  
+        				
+        				// ipNetToMediaType    | PhysAddress | read-write | mandatory
+        				if(snmpOID.toString().equals(("1.3.6.1.2.1.4.22.1.4."+arrElement.get(2)))){
+
+        	                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+        	                {
+        	                    int errorIndex = i+1;
+        	                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+        	                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+        	                }
+        	                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+	        	            {
+        	                	try
+	    	                    {
+	    	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(arrElement.get(3))));
+	    	                        responseList.addSNMPObject(newPair);
+	    	                        break;
+	    	                    }
+	    	                    catch (SNMPBadValueException e)
+	    	                    {
+	    	                        // won't happen...
+	    	                    }
+	        	            }
+        				}// ipNetToMediaType  
+        				
+        			} // for (int j = 0; j < table.size(); j++)
+        			
+        			
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            	
+            }
+
             /**
              * 
              * the ICMP Group
@@ -4914,18 +5429,20 @@ public class Mibs implements SNMPRequestListener {
                 
             } // tcpRetransSegs
             
-            /** the TCP Connection Table */
-            
+            /** the TCP Connection Table 
+             * tcpConnTable 1.3.6.1.2.1.6.13
+             * */
+            // tcpConnEntry
             if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1."))
             {
-            	
+            	// tcpConnState | Integer | Read-Write | Mandatory
             	if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1.1"))
                 {
             		String cmd="netstat\n", line, oidConn="";
             		Process p=null;
                 	ArrayList<String> lines = new ArrayList<String>();
             		BufferedReader in2=null;
-
+            		int stateConn=0;
                 	try
                     {
                 		p = Runtime.getRuntime().exec(cmd);
@@ -4952,12 +5469,529 @@ public class Mibs implements SNMPRequestListener {
             			for (int j = 0; j < matNetstat.length; j++) {
 							
             				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+            					
             					String arr[] = matNetstat[j][3].split(":");
-								oidConn = arr[arr.length-2]+"."+ arr[arr.length-1]; 
+            					// :::* -> [][][][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						oidConn = "0.0.0.0.0"; // 0.0.0.0:0
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							oidConn = "127.0.0.1."+arr[arr.length-1]; // 127.0.0.1:25
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+                							oidConn = "0.0.0.0.0"; // 0.0.0.0.0
+            							}else{
+            								oidConn = arr[arr.length-2]+"."+ arr[arr.length-1];
+            							}
+            						}
+            					}
+            					 
 								arr = matNetstat[j][4].split(":");
-								oidConn += "."+arr[arr.length-2]+"."+ arr[arr.length-1]; 
+								
+								if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						oidConn = ".0.0.0.0.0"; // 0.0.0.0:0
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							oidConn = ".127.0.0.1."+arr[arr.length-1]; // 127.0.0.1:25
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+                							oidConn = ".0.0.0.0.0"; // 0.0.0.0.0
+            							}else{
+            								oidConn += "."+arr[arr.length-2]+"."+ arr[arr.length-1];
+            							}
+            						}
+            					}			
+								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("tcp")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+        							oidConn = "0.0.0.0.0"; 
+    							}else{
+    								oidConn = arr[arr.length-2]+"."+ arr[arr.length-1];
+    							}
+            					 
+								arr = matNetstat[j][4].split(":");
+								// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+        							oidConn = ".0.0.0.0.0"; 
+    							}else{
+    								oidConn += "."+arr[arr.length-2]+"."+ arr[arr.length-1];
+    							}
+            					 								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("udp") || matNetstat[j][0].equalsIgnoreCase("udp6")){
+            					continue;
             				}
-	            				System.out.println(oidConn);
+            				
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.6.13.1.1."+oidConn))){
+	            				
+	            				if(matNetstat[j][5].equalsIgnoreCase("closed")) {
+	            					stateConn=1;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("listen")) {
+	            					stateConn=2;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("syn_sent")) {
+	            					stateConn=3;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("syn_received")) {
+	            					stateConn=4;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("established")) {
+	            					stateConn=5;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("fin_wait_1")) {
+	            					stateConn=6;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("fin_wait_2")) {
+	            					stateConn=7;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("close_wait")) {
+	            					stateConn=8;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("last_ack")) {
+	            					stateConn=9;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("closing")) {
+	            					stateConn=10;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("time_wait")) {
+	            					stateConn=11;
+	            				}else if(matNetstat[j][5].equalsIgnoreCase("delete_tcb")) {
+	            					stateConn=12;
+	            				}
+										
+	            				try {
+	            					
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(stateConn));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}
+	            			}
+						}
+            			
+                    }
+            		catch (Exception e)
+   	                {
+   	                	 e.printStackTrace();
+   	                }
+            	
+                // tcpConnLocalAddress | IPAddress | Read-Only | Mandatory
+                }else if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1.2"))
+                {
+            		String cmd="netstat\n", line, oidConn = "";
+            		String ipAddress1="", ipAddress2="", portLocal="", portForeign="";
+            		Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+            		
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			/* Comienzo en 1 para saltar esta linea:
+            			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+            			 */
+    		
+						String matNetstat[][] = new String[lines.size()-1][6];
+
+            			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+            			
+            			for (int j = 0; j < matNetstat.length; j++) {
+							
+            				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// :::* -> [][][][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress1="0.0.0.0"; portLocal="0";
+            							}else{
+            								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+            							}
+            						}
+            					}
+            					 
+								arr = matNetstat[j][4].split(":");
+								
+								if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress2="127.0.0.1"; portForeign=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress2="0.0.0.0"; portForeign="0";
+            							}else{
+            								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+            							}
+            						}
+            					}			
+								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("tcp")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0"; 
+    							}else{
+    								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+    							}
+            					 
+								arr = matNetstat[j][4].split(":");
+								// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+    							}else{
+    								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+    							}
+            					 								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("udp") || matNetstat[j][0].equalsIgnoreCase("udp6")){
+            					continue;
+            				}
+            				
+            				oidConn = ipAddress1 + "." + portLocal + "." + ipAddress2 + "." + portForeign; 
+            				
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.6.13.1.2."+oidConn))){            					
+	            				try {
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ipAddress1));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}
+	            			}
+						}
+            			
+                    }
+            		catch (Exception e)
+   	                {
+   	                	 e.printStackTrace();
+   	                }
+            	
+                // tcpConnLocalPort | Integer | Read-Only | Mandatory
+                }else if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1.3"))
+                {
+            		String cmd="netstat\n", line, oidConn = "";
+            		String ipAddress1="", ipAddress2="", portLocal="", portForeign="";
+            		Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+            		
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			/* Comienzo en 1 para saltar esta linea:
+            			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+            			 */
+    		
+						String matNetstat[][] = new String[lines.size()-1][6];
+
+            			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+            			
+            			for (int j = 0; j < matNetstat.length; j++) {
+							
+            				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// :::* -> [][][][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress1="0.0.0.0"; portLocal="0";
+            							}else{
+            								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+            							}
+            						}
+            					}
+            					 
+								arr = matNetstat[j][4].split(":");
+								
+								if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress2="127.0.0.1"; portForeign=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress2="0.0.0.0"; portForeign="0";
+            							}else{
+            								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+            							}
+            						}
+            					}			
+								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("tcp")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0"; 
+    							}else{
+    								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+    							}
+            					 
+								arr = matNetstat[j][4].split(":");
+								// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+    							}else{
+    								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+    							}
+            					 								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("udp") || matNetstat[j][0].equalsIgnoreCase("udp6")){
+            					continue;
+            				}
+            				
+            				oidConn = ipAddress1 + "." + portLocal + "." + ipAddress2 + "." + portForeign; 
+            				
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.6.13.1.3."+oidConn))){            					
+	            				try {
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(portLocal)));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}
+	            			}
+						}
+            			
+                    }
+            		catch (Exception e)
+   	                {
+   	                	 e.printStackTrace();
+   	                }
+            		
+                // tcpConnRemAddress | IPAddress | Read-Only | Mandatory	
+                }else if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1.4"))
+                {
+            		String cmd="netstat\n", line, oidConn = "";
+            		String ipAddress1="", ipAddress2="", portLocal="", portForeign="";
+            		Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+            		
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			/* Comienzo en 1 para saltar esta linea:
+            			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+            			 */
+    		
+						String matNetstat[][] = new String[lines.size()-1][6];
+
+            			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+            			
+            			for (int j = 0; j < matNetstat.length; j++) {
+							
+            				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// :::* -> [][][][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress1="0.0.0.0"; portLocal="0";
+            							}else{
+            								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+            							}
+            						}
+            					}
+            					 
+								arr = matNetstat[j][4].split(":");
+								
+								if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress2="127.0.0.1"; portForeign=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress2="0.0.0.0"; portForeign="0";
+            							}else{
+            								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+            							}
+            						}
+            					}			
+								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("tcp")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0"; 
+    							}else{
+    								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+    							}
+            					 
+								arr = matNetstat[j][4].split(":");
+								// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+    							}else{
+    								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+    							}
+            					 								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("udp") || matNetstat[j][0].equalsIgnoreCase("udp6")){
+            					continue;
+            				}
+            				
+            				oidConn = ipAddress1 + "." + portLocal + "." + ipAddress2 + "." + portForeign; 
+            				
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.6.13.1.4."+oidConn))){            					
+	            				try {
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ipAddress2));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}
+	            			}
+						}
+            			
+                    }
+            		catch (Exception e)
+   	                {
+   	                	 e.printStackTrace();
+   	                }
+            		
+                // tcpConnRemPort | Integer | Read-Only | Mandatory	
+                }else if (snmpOID.toString().startsWith("1.3.6.1.2.1.6.13.1.5"))
+                {
+            		String cmd="netstat\n", line, oidConn = "";
+            		String ipAddress1="", ipAddress2="", portLocal="", portForeign="";
+            		Process p=null;
+                	ArrayList<String> lines = new ArrayList<String>();
+            		BufferedReader in2=null;
+            		
+                	try
+                    {
+                		p = Runtime.getRuntime().exec(cmd);
+            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            			while ((line =in2.readLine()) != null) {
+            				lines.add(line);
+            			}
+            			/* Comienzo en 1 para saltar esta linea:
+            			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+            			 */
+    		
+						String matNetstat[][] = new String[lines.size()-1][6];
+
+            			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+            			
+            			for (int j = 0; j < matNetstat.length; j++) {
+							
+            				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// :::* -> [][][][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress1="0.0.0.0"; portLocal="0";
+            							}else{
+            								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+            							}
+            						}
+            					}
+            					 
+								arr = matNetstat[j][4].split(":");
+								
+								if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+            					}else{ // ::1:25 -> [][][1][25]
+            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+            							ipAddress2="127.0.0.1"; portForeign=arr[arr.length-1];
+            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            								ipAddress2="0.0.0.0"; portForeign="0";
+            							}else{
+            								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+            							}
+            						}
+            					}			
+								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("tcp")){
+            					
+            					String arr[] = matNetstat[j][3].split(":");
+            					// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress1="0.0.0.0"; portLocal="0"; 
+    							}else{
+    								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+    							}
+            					 
+								arr = matNetstat[j][4].split(":");
+								// 0.0.0.0:* -> [0.0.0.0][*]
+            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+            						ipAddress2="0.0.0.0"; portForeign="0";
+    							}else{
+    								ipAddress2=arr[arr.length-2]; portForeign=arr[arr.length-1];
+    							}
+            					 								
+            				}else if(matNetstat[j][0].equalsIgnoreCase("udp") || matNetstat[j][0].equalsIgnoreCase("udp6")){
+            					continue;
+            				}
+            				
+            				oidConn = ipAddress1 + "." + portLocal + "." + ipAddress2 + "." + portForeign; 
+            				
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.6.13.1.5."+oidConn))){            					
+	            				try {
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(portForeign)));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}
+	            			}
 						}
             			
                     }
@@ -4967,8 +6001,7 @@ public class Mibs implements SNMPRequestListener {
    	                }
             		
                 }
-                	
-            	
+	
             	
             }
             
@@ -5300,6 +6333,185 @@ public class Mibs implements SNMPRequestListener {
                 }
                 
             } // udpOutDatagrams
+            
+            
+            /** the TCP Connection Table 
+             * udpConnTable 1.3.6.1.2.1.7.5
+             * */
+            // udpConnEntry
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.7.5.1."))
+            {
+            	// udpLocalAddress | IPAddress | Read-Only | mandatory
+	            if (snmpOID.toString().startsWith("1.3.6.1.2.1.7.5.1.1."))
+	            {
+	        		String cmd="netstat\n", line, oidConn = "";
+	        		String ipAddress1="", portLocal="";
+	        		Process p=null;
+	            	ArrayList<String> lines = new ArrayList<String>();
+	        		BufferedReader in2=null;
+	        		
+	            	try
+	                {
+	            		p = Runtime.getRuntime().exec(cmd);
+	        			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	        			while ((line =in2.readLine()) != null) {
+	        				lines.add(line);
+	        			}
+	        			/* Comienzo en 1 para saltar esta linea:
+	        			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+	        			 */
+			
+						String matNetstat[][] = new String[lines.size()-1][6];
+	
+	        			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+	        			
+	        			for (int j = 0; j < matNetstat.length; j++) {
+							
+	        				if(matNetstat[j][0].equalsIgnoreCase("udp6")){
+	        					
+	        					String arr[] = matNetstat[j][3].split(":");
+	        					// :::161 -> [][][][161]
+	        					if(arr[arr.length-2].equalsIgnoreCase("") && !arr[arr.length-1].equalsIgnoreCase("")){
+	        						ipAddress1="0.0.0.0"; portLocal=arr[arr.length-1];
+	        					}else{ // :::25 -> [][][1][25]
+	        						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+	        							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+	        						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+	        							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	        								ipAddress1="0.0.0.0"; portLocal="0";
+	        							}else{ //192.168.0.110:161 -> [192.168.0.110][161]
+	        								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+	        							}
+	        						}
+	        					}		
+								
+	        				}else if(matNetstat[j][0].equalsIgnoreCase("udp")){
+	        					
+	        					String arr[] = matNetstat[j][3].split(":");
+	        					// 0.0.0.0:* -> [0.0.0.0][*]
+	        					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	        						ipAddress1="0.0.0.0"; portLocal="0"; 
+								}else{
+									ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+								}
+	        					 								
+	        				}else if(matNetstat[j][0].equalsIgnoreCase("tcp") || matNetstat[j][0].equalsIgnoreCase("tcp6")){
+	        					continue;
+	        				}
+	        				
+	        				oidConn = ipAddress1 + "." + portLocal; 
+	        				System.out.println("1.3.6.1.2.1.7.5.1.1."+oidConn);
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.7.5.1.1."+oidConn))){            					
+	            				try {
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ipAddress1));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}
+	            			}
+						}
+	        			
+	                }
+	        		catch (Exception e)
+		                {
+		                	 e.printStackTrace();
+		                }
+	            	
+	            // udpLocalPort | Integer | Read-Only | Mandatory
+	            }else if (snmpOID.toString().startsWith("1.3.6.1.2.1.7.5.1.2."))
+	            {
+	        		String cmd="netstat\n", line, oidConn = "";
+	        		String ipAddress1="", portLocal="";
+	        		Process p=null;
+	            	ArrayList<String> lines = new ArrayList<String>();
+	        		BufferedReader in2=null;
+	        		
+	            	try
+	                {
+	            		p = Runtime.getRuntime().exec(cmd);
+	        			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	        			while ((line =in2.readLine()) != null) {
+	        				lines.add(line);
+	        			}
+	        			/* Comienzo en 1 para saltar esta linea:
+	        			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+	        			 */
+			
+						String matNetstat[][] = new String[lines.size()-1][6];
+	
+	        			for (int j = 1; j < lines.size(); j++) {
+							String arrTmp[] = lines.get(j).split(" ");
+							for (int k = 0, x = 0; k < arrTmp.length; k++) {
+								if(!arrTmp[k].equalsIgnoreCase("")){
+									matNetstat[j-1][x] = arrTmp[k];
+									x++;
+								}
+							}
+						}
+	        			
+	        			for (int j = 0; j < matNetstat.length; j++) {
+							
+	        				if(matNetstat[j][0].equalsIgnoreCase("udp6")){
+	        					
+	        					String arr[] = matNetstat[j][3].split(":");
+	        					// :::161 -> [][][][161]
+	        					if(arr[arr.length-2].equalsIgnoreCase("") && !arr[arr.length-1].equalsIgnoreCase("")){
+	        						ipAddress1="0.0.0.0"; portLocal=arr[arr.length-1];
+	        					}else{ // ::1:25 -> [][][1][25]
+	        						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+	        							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+	        						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+	        							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	        								ipAddress1="0.0.0.0"; portLocal="0";
+	        							}else{ //192.168.0.110:161 -> [192.168.0.110][161]
+	        								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+	        							}
+	        						}
+	        					}		
+								
+	        				}else if(matNetstat[j][0].equalsIgnoreCase("udp")){
+	        					
+	        					String arr[] = matNetstat[j][3].split(":");
+	        					// 0.0.0.0:* -> [0.0.0.0][*]
+	        					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	        						ipAddress1="0.0.0.0"; portLocal="0"; 
+								}else{
+									ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+								}
+	        					 								
+	        				}else if(matNetstat[j][0].equalsIgnoreCase("tcp") || matNetstat[j][0].equalsIgnoreCase("tcp6")){
+	        					continue;
+	        				}
+	        				
+	        				oidConn = ipAddress1 + "." + portLocal;  
+	        				System.out.println("1.3.6.1.2.1.7.5.1.2."+oidConn);
+	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.7.5.1.2."+oidConn))){            					
+	            				try {
+	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(portLocal)));
+	                                responseList.addSNMPObject(newPair);
+								} catch (Exception e2) {
+									e2.printStackTrace();
+								}	            				
+	            			}
+						}
+	        			
+	                }
+	        		catch (Exception e)
+		                {
+		                	 e.printStackTrace();
+		                }
+	        	
+	            }
+            	
+            }
             
             
             
