@@ -5,7 +5,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+
 
 
 
@@ -16,7 +16,6 @@ import snmp.SNMPGauge32;
 import snmp.SNMPGetException;
 import snmp.SNMPIPAddress;
 import snmp.SNMPInteger;
-import snmp.SNMPNSAPAddress;
 import snmp.SNMPObject;
 import snmp.SNMPObjectIdentifier;
 import snmp.SNMPOctetString;
@@ -226,7 +225,7 @@ public class Mibs implements SNMPRequestListener {
 					        		"statistics/multicast", /* ifInNUcastPkts*/
 					        		"statistics/rx_dropped", /* ifInDiscards*/
 					        		"statistics/rx_errors", /* ifInErrors*/
-					        		"statistics/rx_missed", /** ifInUnknownProtos  PREGUNTAR */
+					        		"statistics/rx_missed", /* ifInUnknownProtos */
 					        		"statistics/tx_bytes", /* ifOutOctets */
 					        		"statistics/tx_packets", /* ifOutUcastPkts */
 					        		/** ###FALTA### ifOutNUcastPkts */
@@ -1652,8 +1651,8 @@ public class Mibs implements SNMPRequestListener {
             } // ifOutErrors
             
             
-            // ifOutQLen Counter32 | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.20.X -> X es el numero de interfaz
-            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.20."))
+            // ifOutQLen Counter32 | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.21.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.21."))
             {
                 if (pduType == SNMPBERCodec.SNMPSETREQUEST)
                 {
