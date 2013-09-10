@@ -35,7 +35,7 @@ public class AgentSNMP extends Service {
 			if (agent != null){ 
 				agent.stopReceiving(); 
 			}
-			Toast.makeText(this, "Servicio Detenido...!", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "The Service Stopped", Toast.LENGTH_SHORT).show();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
