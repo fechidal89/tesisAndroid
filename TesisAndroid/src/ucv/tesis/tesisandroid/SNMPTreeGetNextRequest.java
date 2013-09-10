@@ -7,6 +7,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import snmp.SNMPIPAddress;
+import snmp.SNMPInteger;
+import snmp.SNMPObjectIdentifier;
+import snmp.SNMPVariablePair;
+
 public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextRequest<T>> {
 
 	
@@ -518,7 +523,265 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 					icmp.addLeaf("1.3.6.1.2.1.5.26");// icmpOutAddrMaskReps
 	    		}
 	    	
+	    		/**
+	    		 * TCP
+	    		 */
+	    		SNMPTreeGetNextRequest<String> tcp = root.addNode("1.3.6.1.2.1.6");
+	    		{
+	    			tcp.addLeaf("1.3.6.1.2.1.6.1");// tcpRtoAlgorithm
+	    			tcp.addLeaf("1.3.6.1.2.1.6.2");// tcpRtoMin
+	    			tcp.addLeaf("1.3.6.1.2.1.6.3");// tcpRtoMax
+	    			tcp.addLeaf("1.3.6.1.2.1.6.4");// tcpMaxConn
+					tcp.addLeaf("1.3.6.1.2.1.6.5");// tcpActiveOpens
+	    			tcp.addLeaf("1.3.6.1.2.1.6.6");// tcpPassiveOpens
+					tcp.addLeaf("1.3.6.1.2.1.6.7");// tcpAttemptFails
+	    			tcp.addLeaf("1.3.6.1.2.1.6.8");// tcpEstabResets
+	    			tcp.addLeaf("1.3.6.1.2.1.6.9");// tcpCurrEstab
+	    			tcp.addLeaf("1.3.6.1.2.1.6.10");// tcpInSegs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.11");// tcpOutSegs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.12");// tcpRetransSegs
+	    			
+	    			SNMPTreeGetNextRequest<String> tcpConnTable = tcp.addNode("1.3.6.1.2.1.6.13"); // tcpConnTable
+	    			
+	    			SNMPTreeGetNextRequest<String> tcpConnEntry = tcpConnTable.addNode("1.3.6.1.2.1.6.13.1");
+	    			{
+	            		String cmd="netstat\n", line, oidConn="";
+	            		Process p=null;
+	                	ArrayList<String> lines = new ArrayList<String>();
+	            		BufferedReader in2=null;
+	            		int stateConn=0;
+	            		ArrayList<String> table = new ArrayList<String>();
+	                	try
+	                    {
+	                		p = Runtime.getRuntime().exec(cmd);
+	            			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	            			while ((line =in2.readLine()) != null) {
+	            				lines.add(line);
+	            			}
+	            			/* Comienzo en 1 para saltar esta linea:
+	            			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+	            			 */
+	    		
+							String matNetstat[][] = new String[lines.size()-1][6];
+
+	            			for (int j = 1; j < lines.size(); j++) {
+								String arrTmp[] = lines.get(j).split(" ");
+								for (int k = 0, x = 0; k < arrTmp.length; k++) {
+									if(!arrTmp[k].equalsIgnoreCase("")){
+										matNetstat[j-1][x] = arrTmp[k];
+										x++;
+									}
+								}
+							}
+	            			
+	            			for (int j = 0; j < matNetstat.length; j++) {
+								
+	            				if(matNetstat[j][0].equalsIgnoreCase("tcp6")){
+	            					
+	            					String arr[] = matNetstat[j][3].split(":");
+	            					// :::* -> [][][][*]
+	            					if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+	            						oidConn = "0.0.0.0.0"; // 0.0.0.0:0
+	            					}else{ // ::1:25 -> [][][1][25]
+	            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+	            							oidConn = "127.0.0.1."+arr[arr.length-1]; // 127.0.0.1:25
+	            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+	            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	                							oidConn = "0.0.0.0.0"; // 0.0.0.0.0
+	            							}else{
+	            								oidConn = arr[arr.length-2]+"."+ arr[arr.length-1];
+	            							}
+	            						}
+	            					}
+	            					 
+									arr = matNetstat[j][4].split(":");
+									
+									if(arr[arr.length-2].equalsIgnoreCase("") && arr[arr.length-1].equalsIgnoreCase("*")){
+	            						oidConn = ".0.0.0.0.0"; // 0.0.0.0:0
+	            					}else{ // ::1:25 -> [][][1][25]
+	            						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+	            							oidConn = ".127.0.0.1."+arr[arr.length-1]; // 127.0.0.1:25
+	            						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+	            							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	                							oidConn = ".0.0.0.0.0"; // 0.0.0.0.0
+	            							}else{
+	            								oidConn += "."+arr[arr.length-2]+"."+ arr[arr.length-1];
+	            							}
+	            						}
+	            					}			
+									
+	            				}else if(matNetstat[j][0].equalsIgnoreCase("tcp")){
+	            					
+	            					String arr[] = matNetstat[j][3].split(":");
+	            					// 0.0.0.0:* -> [0.0.0.0][*]
+	            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	        							oidConn = "0.0.0.0.0"; 
+	    							}else{
+	    								oidConn = arr[arr.length-2]+"."+ arr[arr.length-1];
+	    							}
+	            					 
+									arr = matNetstat[j][4].split(":");
+									// 0.0.0.0:* -> [0.0.0.0][*]
+	            					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+	        							oidConn = ".0.0.0.0.0"; 
+	    							}else{
+	    								oidConn += "."+arr[arr.length-2]+"."+ arr[arr.length-1];
+	    							}
+	            					 								
+	            				}else if(matNetstat[j][0].equalsIgnoreCase("udp") || matNetstat[j][0].equalsIgnoreCase("udp6")){
+	            					continue;
+	            				} // endif
+	            				
+		            			table.add(oidConn);
+		            			
+							} // for
+	            			
+	                    }
+	            		catch (Exception e)
+	   	                {
+	   	                	 e.printStackTrace();
+	   	                }
+	                	
+	                	/**tcpConnState*/
+		            	SNMPTreeGetNextRequest<String> tcpConnState = tcpConnEntry.addNode("1.3.6.1.2.1.6.13.1.1");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							tcpConnState.addLeaf("1.3.6.1.2.1.6.13.1.1."+str);
+						}
+		            	/**tcpConnLocalAddress*/
+		            	SNMPTreeGetNextRequest<String> tcpConnLocalAddress = tcpConnEntry.addNode("1.3.6.1.2.1.6.13.1.2");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							tcpConnLocalAddress.addLeaf("1.3.6.1.2.1.6.13.1.2."+str);
+						}
+		            	/**tcpConnLocalPort*/
+		            	SNMPTreeGetNextRequest<String> tcpConnLocalPort = tcpConnEntry.addNode("1.3.6.1.2.1.6.13.1.3");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							tcpConnLocalPort.addLeaf("1.3.6.1.2.1.6.13.1.3."+str);
+						}
+		            	/**tcpConnRemAddress*/
+		            	SNMPTreeGetNextRequest<String> tcpConnRemAddress = tcpConnEntry.addNode("1.3.6.1.2.1.6.13.1.4");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							tcpConnRemAddress.addLeaf("1.3.6.1.2.1.6.13.1.4."+str);
+						}
+		            	/**tcpConnRemPort*/
+		            	SNMPTreeGetNextRequest<String> tcpConnRemPort = tcpConnEntry.addNode("1.3.6.1.2.1.6.13.1.5");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							tcpConnRemPort.addLeaf("1.3.6.1.2.1.6.13.1.5."+str);
+						}
+	    				
+	    			}
+	    			
+	    			tcp.addLeaf("1.3.6.1.2.1.6.14");// tcpInErrs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.15");// tcpOutRsts
+	    		}
 	    	
+	    		/**
+	    		 * UDP
+	    		 */
+	    		SNMPTreeGetNextRequest<String> udp = root.addNode("1.3.6.1.2.1.7");
+	    		{
+	    			udp.addLeaf("1.3.6.1.2.1.7.1");// udpInDatagrams
+					udp.addLeaf("1.3.6.1.2.1.7.2");// udpNoPorts
+					udp.addLeaf("1.3.6.1.2.1.7.3");// udpInErrors
+					udp.addLeaf("1.3.6.1.2.1.7.4");// udpOutDatagrams
+					SNMPTreeGetNextRequest<String> udpTable = udp.addNode("1.3.6.1.2.1.7.5");// udpTable
+					
+					SNMPTreeGetNextRequest<String> udpEntry = udpTable.addNode("1.3.6.1.2.1.7.5.1");
+					{
+				  		String cmd="netstat\n", line, oidConn = "";
+		        		String ipAddress1="", portLocal="";
+		        		Process p=null;
+		            	ArrayList<String> lines = new ArrayList<String>();
+		        		BufferedReader in2=null;
+		        		ArrayList<String> table = new ArrayList<String>();
+		            	try
+		                {
+		            		p = Runtime.getRuntime().exec(cmd);
+		        			in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		        			while ((line =in2.readLine()) != null) {
+		        				lines.add(line);
+		        			}
+		        			/* Comienzo en 1 para saltar esta linea:
+		        			 * Proto Recv-Q Send-Q Local_Address Foreign_Address State
+		        			 */
+				
+							String matNetstat[][] = new String[lines.size()-1][6];
+		
+		        			for (int j = 1; j < lines.size(); j++) {
+								String arrTmp[] = lines.get(j).split(" ");
+								for (int k = 0, x = 0; k < arrTmp.length; k++) {
+									if(!arrTmp[k].equalsIgnoreCase("")){
+										matNetstat[j-1][x] = arrTmp[k];
+										x++;
+									}
+								}
+							}
+		        			
+		        			for (int j = 0; j < matNetstat.length; j++) {
+								
+		        				if(matNetstat[j][0].equalsIgnoreCase("udp6")){
+		        					
+		        					String arr[] = matNetstat[j][3].split(":");
+		        					// :::161 -> [][][][161]
+		        					if(arr[arr.length-2].equalsIgnoreCase("") && !arr[arr.length-1].equalsIgnoreCase("")){
+		        						ipAddress1="0.0.0.0"; portLocal=arr[arr.length-1];
+		        					}else{ // :::25 -> [][][1][25]
+		        						if(arr[arr.length-2].equalsIgnoreCase("1") && !arr[arr.length-1].equalsIgnoreCase("")){
+		        							ipAddress1="127.0.0.1"; portLocal=arr[arr.length-1];
+		        						}else{ // 0.0.0.0:* -> [0.0.0.0][*]
+		        							if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+		        								ipAddress1="0.0.0.0"; portLocal="0";
+		        							}else{ //192.168.0.110:161 -> [192.168.0.110][161]
+		        								ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+		        							}
+		        						}
+		        					}		
+									
+		        				}else if(matNetstat[j][0].equalsIgnoreCase("udp")){
+		        					
+		        					String arr[] = matNetstat[j][3].split(":");
+		        					// 0.0.0.0:* -> [0.0.0.0][*]
+		        					if(arr[arr.length-2].equalsIgnoreCase("0.0.0.0") && arr[arr.length-1].equalsIgnoreCase("*")){
+		        						ipAddress1="0.0.0.0"; portLocal="0"; 
+									}else{
+										ipAddress1=arr[arr.length-2]; portLocal=arr[arr.length-1];
+									}
+		        					 								
+		        				}else if(matNetstat[j][0].equalsIgnoreCase("tcp") || matNetstat[j][0].equalsIgnoreCase("tcp6")){
+		        					continue;
+		        				}
+		        				
+		        				oidConn = ipAddress1 + "." + portLocal; 
+		        			
+		        				table.add(oidConn);
+							}
+		        			
+		                }
+		        		catch (Exception e)
+		                {
+		                	 e.printStackTrace();
+		                }
+		            	
+		            	/**udpLocalAddress*/
+		            	SNMPTreeGetNextRequest<String> udpLocalAddress = udpEntry.addNode("1.3.6.1.2.1.7.5.1.1");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							udpLocalAddress.addLeaf("1.3.6.1.2.1.7.5.1.1."+str);
+						}
+		            	/**udpLocalPort*/
+		            	SNMPTreeGetNextRequest<String> udpLocalPort = udpEntry.addNode("1.3.6.1.2.1.7.5.1.2");
+		            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
+							String str = (String) iterator.next();
+							udpLocalPort.addLeaf("1.3.6.1.2.1.7.5.1.2."+str);
+						}
+		            	
+					}//udpEntry
+	    		}
+	    		
 	    	} // root
 	    	
 	    	return root;	    	
