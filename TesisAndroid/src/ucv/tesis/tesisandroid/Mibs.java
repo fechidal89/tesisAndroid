@@ -6334,7 +6334,7 @@ public class Mibs implements SNMPRequestListener {
             } // udpOutDatagrams
             
             
-            /** the TCP Connection Table 
+            /** the UDP Connection Table 
              * udpConnTable 1.3.6.1.2.1.7.5
              * */
             // udpConnEntry
@@ -6407,7 +6407,7 @@ public class Mibs implements SNMPRequestListener {
 	        				}
 	        				
 	        				oidConn = ipAddress1 + "." + portLocal; 
-	        				System.out.println("1.3.6.1.2.1.7.5.1.1."+oidConn);
+	        				
 	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.7.5.1.1."+oidConn))){            					
 	            				try {
 	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPIPAddress(ipAddress1));
@@ -6491,7 +6491,7 @@ public class Mibs implements SNMPRequestListener {
 	        				}
 	        				
 	        				oidConn = ipAddress1 + "." + portLocal;  
-	        				System.out.println("1.3.6.1.2.1.7.5.1.2."+oidConn);
+	        				
 	            			if(snmpOID.toString().equalsIgnoreCase(("1.3.6.1.2.1.7.5.1.2."+oidConn))){            					
 	            				try {
 	            					SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(portLocal)));
