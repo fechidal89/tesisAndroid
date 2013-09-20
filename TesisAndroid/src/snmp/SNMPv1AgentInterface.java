@@ -245,20 +245,34 @@ public class SNMPv1AgentInterface
                 
                 SNMPMessage receivedMessage = new SNMPMessage(SNMPBERCodec.extractNextTLV(encodedMessage,0).value);
                 
-                String communityName = receivedMessage.getCommunityName();
-                SNMPPDU receivedPDU = receivedMessage.getPDU();
-                byte requestPDUType = receivedPDU.getPDUType();
-                
+                SNMPPDU receivedPDU = null;
+                SNMPv2BulkRequestPDU receivedBulkPDU = null;
+                byte requestPDUType;
+                String communityName = "";
+                SNMPSequence requestedVarList;
+                int requestID = 0;
+                if(receivedMessage.getPDUAsObject() instanceof SNMPv2BulkRequestPDU){
+                	receivedBulkPDU = receivedMessage.getv2BulkPDU();
+                	requestPDUType = receivedBulkPDU.getPDUType();
+                	communityName = receivedMessage.getCommunityName();
+                	requestedVarList = receivedBulkPDU.getVarBindList();
+                	requestID = receivedBulkPDU.getRequestID();
+                }else{ 
+            		receivedPDU = receivedMessage.getPDU();
+                	requestPDUType = receivedPDU.getPDUType();
+                	communityName = receivedMessage.getCommunityName();
+                	requestedVarList = receivedPDU.getVarBindList();
+                	requestID = receivedPDU.getRequestID();
+            	}
+                         
                 //System.out.println("Received message; community = " + communityName + ", pdu type = " + Byte.toString(requestPDUType));
                 //System.out.println("  read community = " + readCommunityName + ", write community = " + writeCommunityName);
-                
-                SNMPSequence requestedVarList = receivedPDU.getVarBindList();
                 
                 Hashtable variablePairHashtable = new Hashtable();
                 SNMPSequence responseVarList = new SNMPSequence();
                 int errorIndex = 0;
                 int errorStatus = SNMPRequestException.NO_ERROR;
-                int requestID = receivedPDU.getRequestID();
+                
                 
                 try
                 {
@@ -340,24 +354,29 @@ public class SNMPv1AgentInterface
                                 SNMPSequence handledPair = (SNMPSequence)handledVarList.getSNMPObjectAt(j);
                                 SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)handledPair.getSNMPObjectAt(0);
                                 SNMPObject snmpObject = (SNMPObject)handledPair.getSNMPObjectAt(1);
-                                
+                                System.out.println("handledVarList: OID: " + snmpOID.toString()+" value: "+snmpObject.toString() );
+                               /*
                                 if (!variablePairHashtable.containsKey(snmpOID))
                                 {
                                     variablePairHashtable.put(snmpOID, snmpObject);
                                 }
+                                */
+                                //SNMPVariablePair responsePair = (SNMPVariablePair)variablePairHashtable.get(snmpOID);
+                                responseVarList.addSNMPObject(handledPair);
                                 
                             }
                             
                         }
                         
-                        
-                        
-                        // construct response containing the handled OIDs; if any OID not handled, throw exception
+                        /* construct response containing the handled OIDs; if any OID not handled, throw exception
                         for (int j = 0; j < requestedVarList.size(); j++)
                         {
                             SNMPSequence requestPair = (SNMPSequence)requestedVarList.getSNMPObjectAt(j);
                             SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)requestPair.getSNMPObjectAt(0);
-
+                            SNMPObject snmpObject = (SNMPObject)requestPair.getSNMPObjectAt(1);
+                            	System.out.println("snmpOID: "+ snmpOID.toString() +
+                            			"value: "+ snmpObject.toString());
+                            
                             // find corresponding SNMP object in hashtable
                             if (!variablePairHashtable.containsKey(snmpOID))
                             {
@@ -366,17 +385,49 @@ public class SNMPv1AgentInterface
                                
                                throw new SNMPGetException("OID " + snmpOID + " not handled", errorIndex, errorStatus);
                             }
-
+                           
                             // value in hashtable is complete variable pair
                             SNMPVariablePair responsePair = (SNMPVariablePair)variablePairHashtable.get(snmpOID);
 
                             responseVarList.addSNMPObject(responsePair);
                             
-                        }
+                        }*/
                         
                     }
-                    else
+                    else if (requestPDUType == SNMPBERCodec.SNMPv2BULKREQUEST)
                     {
+                
+                    	// pass the received PDU and community name to any registered listeners
+                        for (int i = 0; i < listenerVector.size(); i++)
+                        {
+                            Mibs listener = (Mibs)listenerVector.elementAt(i);
+                            
+                            // return value is sequence of nested variable pairs for those OIDs handled by the listener:
+                            // consists of (supplied OID, (following OID, value)) nested variable pairs
+                            SNMPSequence handledVarList = listener.processGetBulkRequest(receivedBulkPDU, communityName);
+                               
+                            // add variable pair to Hashtable of handled OIDs, if not already there
+                            for (int j = 0; j < handledVarList.size(); j++)
+                            {
+                                
+                                SNMPSequence handledPair = (SNMPSequence)handledVarList.getSNMPObjectAt(j);
+                                SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)handledPair.getSNMPObjectAt(0);
+                                SNMPObject snmpObject = (SNMPObject)handledPair.getSNMPObjectAt(1);
+                                System.out.println("handledVarList: OID: " + snmpOID.toString()+" value: "+snmpObject.toString() );
+                               /*
+                                if (!variablePairHashtable.containsKey(snmpOID))
+                                {
+                                    variablePairHashtable.put(snmpOID, snmpObject);
+                                }
+                                */
+                                //SNMPVariablePair responsePair = (SNMPVariablePair)variablePairHashtable.get(snmpOID);
+                                responseVarList.addSNMPObject(handledPair);
+                                
+                            }
+                            
+                        }
+                    
+                    }else{
                         // some other PDU type; silently ignore
                         continue;
                     }
@@ -444,7 +495,7 @@ public class SNMPv1AgentInterface
     
     
     
-    private String hexByte(byte b)
+    public static String hexByte(byte b)
     {
         int pos = b;
         if (pos < 0)
@@ -488,6 +539,25 @@ public class SNMPv1AgentInterface
     {
         return this.receiveBufferSize;
     }
+
+
+
+	public static String hexByte(byte[] value) {
+		
+		String returnString = new String();
+		
+		for (int i = 0; i < value.length; i++) {
+			int pos = value[i];
+	        if (pos < 0)
+	            pos += 256;
+	        
+	        returnString += Integer.toHexString(pos/16);
+	        returnString += Integer.toHexString(pos%16);
+	    }
+			
+        return returnString;
+		
+	}
     
     
     
