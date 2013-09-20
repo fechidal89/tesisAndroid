@@ -198,7 +198,10 @@ public class SNMPMessage extends SNMPSequence
             throw new SNMPBadValueException("Bad SNMP message: bad community name");
         }
         
-        if (!(contents.elementAt(2) instanceof SNMPPDU) && !(contents.elementAt(2) instanceof SNMPv1TrapPDU) && !(contents.elementAt(2) instanceof SNMPv2TrapPDU))
+        if (!(contents.elementAt(2) instanceof SNMPPDU) && 
+        	!(contents.elementAt(2) instanceof SNMPv1TrapPDU) && 
+        	!(contents.elementAt(2) instanceof SNMPv2TrapPDU) && 
+        	!(contents.elementAt(2) instanceof SNMPv2BulkRequestPDU))
         {
             throw new SNMPBadValueException("Bad SNMP message: bad PDU");
         }
@@ -280,7 +283,24 @@ public class SNMPMessage extends SNMPSequence
         return (SNMPv2TrapPDU)pdu;
     }
     
+    /** 
+    *    Utility method which returns the PDU contained in the SNMP message as an SNMPv2TrapPDU. The pdu is the 
+    *   third component of the sequence, after the version and community name.
+    */
     
+    public SNMPv2BulkRequestPDU getv2BulkPDU()
+        throws SNMPBadValueException
+    {
+        Vector contents = (Vector)(this.getValue());
+        Object pdu = contents.elementAt(2);
+        
+        if (!(pdu instanceof SNMPv2BulkRequestPDU))
+        {
+            throw new SNMPBadValueException("Wrong PDU type in message: expected SNMPv2BulkRequestPDU, have " + pdu.getClass().toString());
+        }
+        
+        return (SNMPv2BulkRequestPDU)pdu;
+    }
     
     /** 
     *    Utility method which returns the community name contained in the SNMP message. The community name is the 
