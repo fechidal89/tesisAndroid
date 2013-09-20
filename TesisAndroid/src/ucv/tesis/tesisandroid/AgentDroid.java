@@ -245,24 +245,11 @@ public class AgentDroid extends Activity {
 	    	
 	    			    	
 	    } // endIf(Build.VERSION.SDK_INT >= 14) 
-	
-	    SNMPTreeGetNextRequest<String> root = SNMPTreeGetNextRequest.SNMPTreeLoad();
-	    
-	    SNMPTreeGetNextRequest<String> treeRoot = SNMPTreeGetNextRequest.SNMPTreeLoad();
-        for (SNMPTreeGetNextRequest<String> node : treeRoot) {
-                String indent = createIndent(node.getLevel());
-                System.out.println(indent + node.data);
-        }
+	        
 	    
 	}
 	
-	private static String createIndent(int depth) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < depth; i++) {
-                sb.append("_|");
-        }
-        return sb.toString();
-	}
+
 	
 	private static boolean isRunning(Context context, String class_name)
 	{
