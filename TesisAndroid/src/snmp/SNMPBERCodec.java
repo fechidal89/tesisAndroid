@@ -167,6 +167,11 @@ public class SNMPBERCodec
                 return new SNMPPDU(theTLV.value, theTLV.tag);
             }
             
+            case SNMPv2BULKREQUEST:
+            {
+                return new SNMPv2BulkRequestPDU(theTLV.value, theTLV.tag);
+            }
+            
             case SNMPTRAP:
             {
                 return new SNMPv1TrapPDU(theTLV.value);
@@ -286,21 +291,21 @@ public class SNMPBERCodec
             ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
             outBytes.write(enc, currentPos, dataLength);
             nextTLV.value = outBytes.toByteArray();
-                    
             
-            return nextTLV;
-        
-        }
-        catch (IndexOutOfBoundsException e)
-        {
-            // whatever the exception, throw an SNMPBadValueException
-            throw new SNMPBadValueException("Problem while decoding SNMP: packet truncated or corrupt");
-        }
-        catch (Exception e)
-        {
-            // whatever the exception, throw an SNMPBadValueException
-            throw new SNMPBadValueException("Problem while decoding SNMP");
-        }
+            
+		    return nextTLV;
+		
+		}
+		catch (IndexOutOfBoundsException e)
+		{
+		    // whatever the exception, throw an SNMPBadValueException
+		    throw new SNMPBadValueException("Problem while decoding SNMP: packet truncated or corrupt");
+		}
+		catch (Exception e)
+		{
+		    // whatever the exception, throw an SNMPBadValueException
+		    throw new SNMPBadValueException("Problem while decoding SNMP");
+		}
             
     }
     
