@@ -6,9 +6,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
-
-
 import snmp.SNMPBERCodec;
 import snmp.SNMPBadValueException;
 import snmp.SNMPCounter32;
@@ -26,6 +23,7 @@ import snmp.SNMPSequence;
 import snmp.SNMPSetException;
 import snmp.SNMPTimeTicks;
 import snmp.SNMPVariablePair;
+import snmp.SNMPv2BulkRequestPDU;
 
 public class Mibs implements SNMPRequestListener {
 
@@ -69,6 +67,24 @@ public class Mibs implements SNMPRequestListener {
                 break;
             }
             
+            case SNMPBERCodec.SNMPv2BULKREQUEST:
+            {
+            	 System.out.println("SNMPv2BULKREQUEST\n");
+                break;
+            }
+           
+            case SNMPBERCodec.SNMPv2INFORMREQUEST:
+            {
+            	 System.out.println("SNMPv2INFORMREQUEST\n");
+                break;
+            }
+           
+            case SNMPBERCodec.SNMPv2TRAP:
+            {
+            	 System.out.println("SNMPv2TRAP\n");
+                break;
+            }
+           
             default:
             {
             	 System.out.println("unknown\n");
@@ -127,7 +143,7 @@ public class Mibs implements SNMPRequestListener {
                         // won't happen...
                     }
                 } 
-                
+                continue;   
             }
             
             if (snmpOID.toString().equals("1.3.6.1.2.1.1.5.0"))
@@ -173,7 +189,7 @@ public class Mibs implements SNMPRequestListener {
                         // won't happen...
                     }
                 } 
-                
+                continue;
             } // if 
             
             
@@ -218,7 +234,7 @@ public class Mibs implements SNMPRequestListener {
 					        		"speed", /* IfSpeed */
 					        		"address", /* ifPhyAddress */
 					        		"operstate", /* ifOperStatus */  
-					        		/**  ###FALTA### IfAdminStatus **/
+					        		/**  ###FALTA### CODIGO PROVISIONAL FUNCIONAL IfAdminStatus **/
 					        		"power/runtime_active_time", /* ifLastChange */
 					        		"statistics/rx_bytes", /*ifInOctets*/
 					        		"statistics/rx_packets", /*IfInUcastPkts*/
@@ -267,8 +283,8 @@ public class Mibs implements SNMPRequestListener {
                         // won't happen...
                     }
                 } 
-                    
-            }
+                continue;    
+            } //ifNumber
             
             
             // ifEntry Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.1.X -> es el numero de interfaz
@@ -327,7 +343,7 @@ public class Mibs implements SNMPRequestListener {
                 	
                 	
                 } 
-                
+                continue;
             } // ifEntry
             
          // ifDescr DisplayString | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.2.X -> X es el numero de interfaz
@@ -388,7 +404,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifDescr
             
             
@@ -461,7 +477,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifType
             
             // ifMtu Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.4.X -> X es el numero de interfaz
@@ -533,7 +549,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifMtu
             
             
@@ -608,7 +624,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifSpeed
             
             
@@ -681,14 +697,103 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifPhysAddress
             
             /**
              * 
              *	FALTA ifAdminStatus -> acceso a BD porque es Read-Write
-             * 
+             *  Codigo PROVISIONAL!!
              */
+         // ifAdminStatus Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.7.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.7."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+
+                	int eth=0; // interfaz solicitada
+                	int nIf=0; // numero de interfaces
+                	String status="";
+                	int oper=0; // operational state
+                 	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					BufferedReader in2=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);					    	
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(20, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta, busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/operstate\n";
+	                    	p = Runtime.getRuntime().exec(cmd);
+							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							status = in2.readLine();
+							// el comando devuelve String lo busco segun el RFC2863
+							if(status.equalsIgnoreCase("up")){
+								oper = 1;
+							}else if(status.equalsIgnoreCase("down")){
+								oper = 2;
+							}else if(status.equalsIgnoreCase("testing")){								
+								oper = 3;
+							}else if(status.equalsIgnoreCase("unknown")){
+								oper = 4;
+							}else if(status.equalsIgnoreCase("dormant")){
+								oper = 5;
+							}else if(status.equalsIgnoreCase("notPresent")){
+								oper = 6;
+							}else{ // lowerLayerDown
+								oper = 7;
+							}
+							
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(oper));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	// TODO: handle exception	                    	
+							e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // ifAdminStatus
+            
             
             // ifOperStatus Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.8.X -> X es el numero de interfaz
             if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.8."))
@@ -776,7 +881,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOperStatus
             
             // ifLastChange TimeTicks | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.9.X -> X es el numero de interfaz
@@ -848,7 +953,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifLastChange
             
 
@@ -921,7 +1026,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifInOctets
             
             
@@ -994,7 +1099,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifInUcastPkts
             
             // ifInNUcastPkts Counter32 | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.12.X -> X es el numero de interfaz
@@ -1066,7 +1171,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifInNUcastPkts
             
             
@@ -1139,7 +1244,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifInDiscards
             
             // ifInErrors Counter32 | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.14.X -> X es el numero de interfaz
@@ -1211,7 +1316,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifInErrors
             
             
@@ -1261,10 +1366,12 @@ public class Mibs implements SNMPRequestListener {
 					if( 1 <= eth && eth <= nIf ){
 	                    try
 	                    {
-	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/statistics/rx_missed\n";
+	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/statistics/rx_missed_errors\n";
 	                    	p = Runtime.getRuntime().exec(cmd);
 							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							packets = Long.parseLong(in2.readLine());
+							line = in2.readLine();
+							System.out.println(line);
+							packets = Long.parseLong(line);
 							
 	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(packets));
 	                        responseList.addSNMPObject(newPair);
@@ -1284,7 +1391,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifInUnknownProtos
             
             
@@ -1357,7 +1464,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOutOctets
             
             
@@ -1430,7 +1537,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOutUcastPkts
             
             // ifOutNUcastPkts Counter32 | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.18.X -> X es el numero de interfaz
@@ -1479,10 +1586,11 @@ public class Mibs implements SNMPRequestListener {
 					if( 1 <= eth && eth <= nIf ){
 	                    try
 	                    {
-	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/statistics/OUTMULTICAST\n";
+	                    	/*cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/statistics/OUTMULTICAST\n";
 	                    	p = Runtime.getRuntime().exec(cmd);
 							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							packets = Long.parseLong(in2.readLine());
+							*/
+							packets = 0; //Long.parseLong(in2.readLine());
 							
 	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPCounter32(packets));
 	                        responseList.addSNMPObject(newPair);
@@ -1502,7 +1610,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOutNUcastPkts
             
             
@@ -1575,7 +1683,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOutDiscards
             
             // ifOutErrors Counter32 | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.20.X -> X es el numero de interfaz
@@ -1647,7 +1755,7 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOutErrors
             
             
@@ -1720,9 +1828,73 @@ public class Mibs implements SNMPRequestListener {
 					}
                 	                	
                 } 
-                
+                continue;
             } // ifOutQLen
             
+            // ifSpecific OBJECT IDENTIFIER | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.22.X -> X es el numero de interfaz
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.22."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	int eth=0; // interfaz solicitada
+                	int nIf=0; // numero de interfaces
+                	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
+					Process p=null;
+					BufferedReader in2=null;
+					ArrayList<String> arrIf = new ArrayList<String>();
+					// Busco cuantas interfaces existen
+					try {
+						p = Runtime.getRuntime().exec(cmd);
+						in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						line="";
+						
+					    while ((line = in2.readLine()) != null) {  
+					    	nIf += 1;
+					    	arrIf.add(line);					    	
+					    }
+					} catch (Exception e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					
+					// Pregunto cual interfaz que esta solicitando
+					try {
+						eth =  Integer.parseInt(snmpOID.toString().substring(21, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de interfaz solicitada esta, busco el valor y lo envio
+					if( 1 <= eth && eth <= nIf ){
+	                    try
+	                    {
+	                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPObjectIdentifier("0.0"));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	// TODO: handle exception	                    	
+							e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // ifOutQLen
             
             /******************************
             *
@@ -1790,7 +1962,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 } 
-                
+                continue;
             } // ipForwarding
             
          // ipDefaultTTL | Integer | Read-Write | Mandatory |
@@ -1847,7 +2019,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 } 
-                
+                continue;
             } // ipDefaultTTL
             
             
@@ -1905,7 +2077,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipInReceives 
             
             // ipInHdrErrors | Counter | Read-Only | Mandatory |
@@ -1962,7 +2134,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipInHdrErrors 
             
             
@@ -2020,7 +2192,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipInAddrErrors 
             
             
@@ -2078,7 +2250,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipForwDatagrams 
             
          // ipInUnknownProtos | Counter | Read-Only | Mandatory |
@@ -2135,7 +2307,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipInUnknownProtos 
       
             
@@ -2193,7 +2365,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipInDiscards 
             
             
@@ -2251,7 +2423,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipInDelivers 
             
             
@@ -2309,7 +2481,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipOutRequests
             
             
@@ -2367,7 +2539,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipOutDiscards
             
             
@@ -2425,7 +2597,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipOutNoRoutes
             
             
@@ -2483,7 +2655,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipReasmTimeout
             
             
@@ -2541,7 +2713,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipReasmReqds
             
             
@@ -2599,7 +2771,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipReasmOKs
             
             
@@ -2657,7 +2829,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipReasmFails
             
             // ipFragOKs | Counter | Read-Only | Mandatory |
@@ -2714,7 +2886,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipFragOKs
             
          // ipFragFails | Counter | Read-Only | Mandatory |
@@ -2771,7 +2943,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipFragFails
             
          // ipFragCreates | Counter | Read-Only | Mandatory |
@@ -2829,7 +3001,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // ipFragCreates
             
             /**
@@ -3040,7 +3212,7 @@ public class Mibs implements SNMPRequestListener {
                 {
                     e.printStackTrace();
                 }
-            	
+            	continue;
             }
             
             
@@ -3160,7 +3332,7 @@ public class Mibs implements SNMPRequestListener {
 	                 }
                 }
                 
-                
+            	continue;   
             }
             
             
@@ -3343,7 +3515,7 @@ public class Mibs implements SNMPRequestListener {
                 {
                     e.printStackTrace();
                 }
-            	
+            	continue;
             }
 
             /**
@@ -3403,7 +3575,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInMsgs
             
          // icmpInErrors | Counter | Read-Only | Mandatory 
@@ -3457,7 +3629,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInErrors
             
             
@@ -3512,7 +3684,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInDestUnreachs
             
             
@@ -3567,7 +3739,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInTimeExcds
             
             
@@ -3622,7 +3794,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInParmProbs
             
             
@@ -3677,7 +3849,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInSrcQuenchs
             
             
@@ -3732,7 +3904,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInRedirects
             
             // icmpInEchos | Counter | Read-Only | Mandatory 
@@ -3786,7 +3958,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInEchos
             
             // icmpInEchoReps | Counter | Read-Only | Mandatory 
@@ -3840,7 +4012,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInEchoReps
             
             
@@ -3895,7 +4067,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInTimestamps
             
             
@@ -3950,7 +4122,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInTimestampReps
             
             
@@ -4005,7 +4177,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInAddrMasks
             
             
@@ -4060,7 +4232,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpInAddrMaskReps
             
             
@@ -4115,7 +4287,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutMsgs
             
             
@@ -4170,7 +4342,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutErrors
             
             
@@ -4225,7 +4397,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutDestUnreachs
             
             
@@ -4280,7 +4452,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutTimeExcds
             
             
@@ -4335,7 +4507,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutParmProbs
             
             
@@ -4390,7 +4562,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutSrcQuenchs
             
             
@@ -4445,7 +4617,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutRedirects
             
             // icmpOutEchos | Counter | Read-Only | Mandatory 
@@ -4499,7 +4671,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutEchos
             
             
@@ -4554,7 +4726,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutEchoReps
             
             
@@ -4609,7 +4781,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutTimestamps
             
             
@@ -4664,7 +4836,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutTimestampReps
             
             // icmpOutAddrMasks | Counter | Read-Only | Mandatory 
@@ -4718,7 +4890,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutAddrMasks
             
             
@@ -4773,7 +4945,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // icmpOutAddrMaskReps
             
             /**
@@ -4832,7 +5004,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpRtoAlgorithm
             
             // tcpRtoMin | Integer | Read-Only | Mandatory 
@@ -4885,7 +5057,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpRtoMin
             
             
@@ -4939,7 +5111,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpRtoMax
             
             
@@ -4993,7 +5165,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpMaxConn
             
             
@@ -5047,7 +5219,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpActiveOpens
             
             
@@ -5101,7 +5273,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpPassiveOpens
             
             
@@ -5155,7 +5327,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpAttemptFails
             
             
@@ -5209,7 +5381,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpEstabResets
             
             
@@ -5263,7 +5435,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpCurrEstab
             
             
@@ -5317,7 +5489,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpInSegs
             
             
@@ -5371,7 +5543,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpOutSegs
             
             
@@ -5425,7 +5597,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpRetransSegs
             
             /** the TCP Connection Table 
@@ -6001,7 +6173,7 @@ public class Mibs implements SNMPRequestListener {
             		
                 }
 	
-            	
+            	continue;
             }
             
             
@@ -6055,7 +6227,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpInErrs
             
             
@@ -6109,7 +6281,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // tcpOutRsts
             
             
@@ -6169,7 +6341,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // udpInDatagrams
             
             // udpNoPorts | Counter | Read-Only | Mandatory 
@@ -6222,7 +6394,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // udpNoPorts
             
             
@@ -6276,7 +6448,7 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // udpInErrors
             
             
@@ -6330,13 +6502,14 @@ public class Mibs implements SNMPRequestListener {
 	                	 e.printStackTrace();
 	                 }
                 }
-                
+                continue;
             } // udpOutDatagrams
             
             
             /** the UDP Connection Table 
              * udpConnTable 1.3.6.1.2.1.7.5
              * */
+            
             // udpConnEntry
             if (snmpOID.toString().startsWith("1.3.6.1.2.1.7.5.1."))
             {
@@ -6509,16 +6682,25 @@ public class Mibs implements SNMPRequestListener {
 		                }
 	        	
 	            }
-            	
-            }
+	            continue;
+            }// udpConnEntry
             
             
             
         } // for
         
         System.out.println("\n");
-        
-        
+        System.out.println("RESPUESTA DE GETREQUEST");
+        for (int i = 0; i < responseList.size(); i++)
+        {
+            SNMPSequence variablePair = (SNMPSequence)varBindList.getSNMPObjectAt(i);
+            SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)variablePair.getSNMPObjectAt(0);
+            SNMPObject snmpValue = (SNMPObject)variablePair.getSNMPObjectAt(1);
+            
+            System.out.println("  OID:    " + snmpOID + "\n");
+            System.out.println("value:    " + snmpValue + "\n");
+            
+        }
         // return the created list of variable pairs
         return responseList;
         
@@ -6526,10 +6708,97 @@ public class Mibs implements SNMPRequestListener {
 	}
 
 	@Override
-	public SNMPSequence processGetNextRequest(SNMPPDU requestPDU,
-			String communityName) throws SNMPGetException {
-		// TODO Auto-generated method stub
-		return null;
+	public SNMPSequence processGetNextRequest(SNMPPDU PDU,
+			String communityName) throws SNMPGetException{
+
+		SNMPTreeGetNextRequest<String> treeRoot = SNMPTreeGetNextRequest.SNMPTreeLoad();
+		SNMPSequence varBindList = PDU.getVarBindList();
+		SNMPSequence newList = new SNMPSequence();
+		
+		for (int i = 0; i < varBindList.size(); i++)
+        {
+            SNMPSequence variablePair = (SNMPSequence)varBindList.getSNMPObjectAt(i);
+            SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)variablePair.getSNMPObjectAt(0);
+            SNMPObject snmpValue = (SNMPObject)variablePair.getSNMPObjectAt(1);
+            SNMPVariablePair newPair = null;
+            
+            try {
+            	
+	            for (SNMPTreeGetNextRequest<String> node : treeRoot) {
+	            	if(node.data.equalsIgnoreCase(snmpOID.toString())){
+	            		newPair = new SNMPVariablePair(new SNMPObjectIdentifier(node.GetNext()), snmpValue);     		
+	            		break;
+	            	}
+	            }
+				newList.addSNMPObject(newPair);
+				
+			} catch (SNMPBadValueException e) {
+				e.printStackTrace();
+			}
+           
+        }
+		
+        SNMPSequence respList = null;
+        try {
+        	PDU = new SNMPPDU(SNMPBERCodec.SNMPGETREQUEST, PDU.getRequestID(), PDU.getErrorStatus(), PDU.getErrorIndex(), newList);
+        	respList = this.processRequest(PDU, communityName);
+		} catch (SNMPSetException e) {
+			e.printStackTrace();
+		} catch (SNMPBadValueException e) {
+			e.printStackTrace();
+		}
+
+		return respList;
+	}
+	
+	
+	public SNMPSequence processGetBulkRequest(SNMPv2BulkRequestPDU PDU,
+			String communityName) throws SNMPGetException{
+		
+ 
+		SNMPSequence newList = PDU.getVarBindList();
+		int L = newList.size();
+		int N = PDU.getNonRepeaters();
+		int maxRep = PDU.getMaxRepetitions();
+		int R = L - N;
+		SNMPTreeGetNextRequest<String> treeGetNext = SNMPTreeGetNextRequest.SNMPTreeLoad();
+		
+		for (int i = 0 ; i < maxRep ; i++) {	
+			for(int j = 0 ; j < R ; j++){
+				SNMPSequence variablePair = (SNMPSequence)newList.getSNMPObjectAt(N+j);
+				SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)variablePair.getSNMPObjectAt(0);
+	            SNMPObject snmpValue = (SNMPObject)variablePair.getSNMPObjectAt(1);
+	            SNMPVariablePair newPair = null;
+	            try {
+		            for (SNMPTreeGetNextRequest<String> node : treeGetNext) {
+		            	if(node.data.equalsIgnoreCase(snmpOID.toString())){
+		            		newPair = new SNMPVariablePair(new SNMPObjectIdentifier(node.GetNext()), snmpValue);     		
+		            		break;
+		            	}
+		            }
+	            	newList.addSNMPObject(newPair);
+				} catch (SNMPBadValueException e) {
+					e.printStackTrace();
+				}			
+			}
+			
+			N+=R; 
+		}
+
+		
+		SNMPPDU v1PDU = null;
+		SNMPSequence respList = null;
+		try {
+        	v1PDU = new SNMPPDU(SNMPBERCodec.SNMPGETREQUEST, PDU.getRequestID(), 0, 0, newList);
+        	respList = this.processRequest(v1PDU, communityName);
+		} catch (SNMPSetException e) {
+			e.printStackTrace();
+		} catch (SNMPBadValueException e) {
+			e.printStackTrace();
+		}
+		System.out.println("hola getBulkRequest");
+		
+		return respList;
 	}
 
 }
