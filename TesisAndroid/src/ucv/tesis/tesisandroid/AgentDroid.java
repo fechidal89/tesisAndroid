@@ -1,5 +1,10 @@
 package ucv.tesis.tesisandroid;
 
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -7,11 +12,18 @@ import java.util.Date;
 import java.util.Iterator;
 
 
+import snmp.SNMPBadValueException;
+import snmp.SNMPIPAddress;
+import snmp.SNMPObjectIdentifier;
+import snmp.SNMPTimeTicks;
+import snmp.SNMPTrapSenderInterface;
+import snmp.SNMPv1TrapPDU;
 import ucv.tesis.tesisandroid.DBOIDHelper.ObjIdent;
 import ucv.tesis.tesisandroid.R;
 import ucv.tesis.tesisandroid.AgentSNMP.LocalBinder;
 
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -20,6 +32,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.*;
@@ -138,6 +152,41 @@ public class AgentDroid extends Activity {
         	}
         	public void onNothingSelected(AdapterView<?> parentView){;}
         }); 
+        
+        Button btn1 = (Button) findViewById(R.id.tab2button1); 
+        
+        btn1.setOnClickListener(new OnClickListener(){         
+                                                               
+        	@Override                                          
+        	public void onClick(View v) { 
+        		
+        		String[] arr = new String[5];
+        		EditText edit = (EditText) findViewById(R.id.tab2editText1);
+    		    String ipAddr  = edit.getText().toString();
+    		    
+    		    edit = (EditText) findViewById(R.id.tab2editText3);
+    		    String community  = edit.getText().toString();
+    		    
+    		    edit = (EditText) findViewById(R.id.tab2editText5);
+    		    String entrepriseOID  = edit.getText().toString();
+    		    
+    		    Spinner list = (Spinner) findViewById(R.id.tab2Spinner1);
+    			int genTrap = list.getSelectedItemPosition();
+    			
+    			edit = (EditText) findViewById(R.id.tab2editText4);
+    			String specTrap = edit.getText().toString();
+    			
+    			arr[0] = ipAddr;
+    			arr[1] = community;
+    			arr[2] = entrepriseOID;
+    			arr[3] = ""+genTrap;
+    			arr[4] = specTrap;
+    			
+    			SenderTrapBackground task = new SenderTrapBackground();
+    			task.execute(arr);
+	
+        	}
+        });
         
         Button btn2 = (Button) findViewById(R.id.tab3button1);
         
@@ -420,4 +469,80 @@ public class AgentDroid extends Activity {
 	}
 
 
+	public class SenderTrapBackground extends AsyncTask<String[], Void, Boolean> {
+
+		
+		@Override
+		protected Boolean doInBackground(String[]... arg0) {
+			
+			boolean send=true;
+			
+			try {
+				
+				SNMPTrapSenderInterface SNMPSendTrapV1 = new SNMPTrapSenderInterface();
+				SNMPv1TrapPDU trap = null;
+				String ipAddr = arg0[0][0];
+				String community = arg0[0][1];
+				String entrepriseOID = arg0[0][2] ;
+				String gTrap = arg0[0][3];
+				String sTrap = arg0[0][4];
+				InetAddress hostAddress = null;
+				
+				int genTrap = 0;
+				int specTrap = 0;
+				
+				try {
+					hostAddress = InetAddress.getByName(ipAddr);
+					genTrap = Integer.parseInt(gTrap.equalsIgnoreCase("")? "0":gTrap);
+					specTrap = Integer.parseInt(sTrap.equalsIgnoreCase("")? "0":sTrap);
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				if(genTrap == 5) 
+					genTrap+=1;
+				
+				SNMPTimeTicks timestamp = new SNMPTimeTicks(SystemClock.uptimeMillis());
+				
+				trap = new SNMPv1TrapPDU( new SNMPObjectIdentifier(entrepriseOID), new SNMPIPAddress(ipAddr), genTrap, specTrap, timestamp);
+			    
+				SNMPSendTrapV1.sendTrap(0, hostAddress, community, trap);
+			    
+				
+			} catch (SocketException e) {
+				e.printStackTrace();
+				send=false;
+			} catch (IOException e) {
+				e.printStackTrace();
+				send=false;
+			} catch (SNMPBadValueException e) {
+				e.printStackTrace();
+				send=false;
+			} 
+			System.out.println("Enviado: " + send);
+			return send;
+		}
+		@Override
+		protected void onPostExecute(Boolean send){
+			
+			Builder builder = new Builder(AgentDroid.this);
+			System.out.println("Enviado: " + send);
+			if(send){ 
+				builder.setTitle("Sender Traps v1");
+				builder.setMessage("SNMPv1Trap sent successfully");
+				builder.setNeutralButton("Ok", null);	
+			}else{
+				builder.setTitle("Sender Traps v1");
+				builder.setMessage("SNMPv1Trap not sent ");
+				builder.setNeutralButton("Ok", null);	
+			}
+			AlertDialog alertDia = builder.create();
+			alertDia.show();
+			alertDia.setCancelable(false);
+		
+		}
+		
+	}
+	
 }
