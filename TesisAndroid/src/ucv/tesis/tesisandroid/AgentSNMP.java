@@ -2,6 +2,7 @@ package ucv.tesis.tesisandroid;
 
 import snmp.SNMPv1AgentInterface;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -10,7 +11,7 @@ import android.widget.Toast;
 public class AgentSNMP extends Service {
 	
 	SNMPv1AgentInterface agent = null;
-	Mibs MIB = new Mibs();
+	Mibs MIB = null;
 	private final IBinder myBinder = new LocalBinder();
 	
 	
@@ -19,6 +20,8 @@ public class AgentSNMP extends Service {
 	@Override
 	public void onCreate(){
 		try {
+			Context context  = getBaseContext();
+			this.MIB = new Mibs(context);
 			this.agent = new SNMPv1AgentInterface(1);
 			this.agent.addRequestListener(MIB);
 			this.agent.startReceiving();
