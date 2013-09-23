@@ -1,5 +1,13 @@
 package ucv.tesis.tesisandroid;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+
+
+import ucv.tesis.tesisandroid.DBOIDHelper.ObjIdent;
 import ucv.tesis.tesisandroid.R;
 import ucv.tesis.tesisandroid.AgentSNMP.LocalBinder;
 
@@ -22,6 +30,8 @@ import android.content.ServiceConnection;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CompoundButton.*;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
@@ -34,7 +44,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ToggleButton;
 import android.view.Menu;
 import android.view.View;
-
+import android.view.View.OnClickListener;
 
 public class AgentDroid extends Activity {
 
@@ -81,7 +91,7 @@ public class AgentDroid extends Activity {
                     "AgentDroid DISCONNECTED to AGENT  ", Toast.LENGTH_LONG).show();
 	    }
 	    
-	   };
+	};
 	
 	
 	@SuppressLint("NewApi")
@@ -129,6 +139,65 @@ public class AgentDroid extends Activity {
         	public void onNothingSelected(AdapterView<?> parentView){;}
         }); 
         
+        Button btn2 = (Button) findViewById(R.id.tab3button1);
+        
+        btn2.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				try {
+					DBOIDHelper database = new DBOIDHelper(getBaseContext());
+					
+					EditText edit = (EditText) findViewById(R.id.tab3editText1);
+				    String str  = edit.getText().toString();
+				    database.update("1.3.6.1.2.1.1.4.0", str);
+				   
+				    edit = (EditText) findViewById(R.id.tab3editText2);
+				    str  = edit.getText().toString();
+				    database.update("1.3.6.1.2.1.1.5.0", str);
+				    
+				    edit = (EditText) findViewById(R.id.tab3editText3);
+				    str  = edit.getText().toString();
+				    database.update("1.3.6.1.2.1.1.6.0", str);
+				    
+				    //2^(X-1) 
+				    int sum = 0;
+				    CheckBox cb = null;
+				    cb = (CheckBox) findViewById(R.id.checkBox1);
+				    if (cb.isChecked())
+				    	sum += Math.pow(2, 1-1);
+				    
+				    cb = (CheckBox) findViewById(R.id.checkBox2);
+				    if (cb.isChecked())
+				    	sum += Math.pow(2, 2-1);
+				    
+				    cb = (CheckBox) findViewById(R.id.checkBox3);
+				    if (cb.isChecked())
+				    	sum += Math.pow(2, 3-1);
+				    
+				    cb = (CheckBox) findViewById(R.id.checkBox4);
+				    if (cb.isChecked())
+				    	sum += Math.pow(2, 4-1);
+				    
+				    cb = (CheckBox) findViewById(R.id.checkBox5);
+				    if (cb.isChecked())
+				    	sum += Math.pow(2, 7-1);
+				    
+				    database.update("1.3.6.1.2.1.1.7.0", ""+sum);
+				    
+				    database.cleanup();
+				    
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					Toast toast1 = Toast.makeText(getApplicationContext(),
+			                "The changes have been saved correctly", Toast.LENGTH_SHORT);
+					toast1.show();
+				}
+			}
+
+        });
+        
         Toast toast1 = Toast.makeText(getApplicationContext(),
                 "No Connected", Toast.LENGTH_SHORT);
         
@@ -157,30 +226,110 @@ public class AgentDroid extends Activity {
 		}
         
         toast1.show();
+        ObjIdent oid = null;
+        DBOIDHelper database = new DBOIDHelper(getBaseContext());
+        ArrayList<ObjIdent> objIdens = database.getAll();
         
-        String str = Build.MODEL + ", " +
-        			 Build.FINGERPRINT + ", " +
-        			 Build.BOOTLOADER + ", " +
-        			 Build.MANUFACTURER + ", " +
-        			 Build.CPU_ABI ;
-	    TextView txtChanged = (TextView) findViewById(R.id.tab3textView1);
-	    txtChanged.setText(txtChanged.getText() + " "+str );
-	    txtChanged = (TextView) findViewById(R.id.tab3textView2);
-	    txtChanged.setText(txtChanged.getText() + " NULL" );
-	    txtChanged = (TextView) findViewById(R.id.tab3textView3);
-	    long milliseconds = SystemClock.uptimeMillis();
-	    long seconds = milliseconds / 1000;
-	    long minutes = seconds / 60;
-	    seconds %= 60;
-	    long hours = minutes / 60;
-	    minutes %= 60;
-	    hours %= 24;
-	    txtChanged.setText(txtChanged.getText() +" "+hours+":"+minutes+":"+seconds );
-	    txtChanged = (TextView) findViewById(R.id.tab3textView7);
+        for (Iterator<ObjIdent> iterator = objIdens.iterator(); iterator.hasNext();) {
+			ObjIdent objIdent = (ObjIdent) iterator.next();
+			System.out.println(objIdent.getName() + " => " + objIdent.getValue() );  
+		}
+        
+        TextView txtChanged = (TextView) findViewById(R.id.tab3textView11);
+        
+		oid = database.getOID("1.3.6.1.2.1.1.1.0");
+		if(oid != null){
+			txtChanged.setText(oid.getValue());
+		}
+		
+		oid = database.getOID("1.3.6.1.2.1.1.2.0");
+		txtChanged = (TextView) findViewById(R.id.tab3textView21);
+		if(oid != null){
+			txtChanged.setText(oid.getValue());
+		}
+		//  getOID("1.3.6.1.2.1.1.3.0")
+	    try {
+	    	Date date = new Date(SystemClock.uptimeMillis());
+		    DateFormat formatter = new SimpleDateFormat("HH:mm:ss.SS");
+		    String dateFormatted = formatter.format(date);
+		    txtChanged = (TextView) findViewById(R.id.tab3textView31);
+		    txtChanged.setText(dateFormatted );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		    
 	    
-	    txtChanged.setText(txtChanged.getText() +" 72" );
-	
-	
+	    EditText editTextChanged;
+	    editTextChanged = (EditText) findViewById(R.id.tab3editText1);
+	    oid = database.getOID("1.3.6.1.2.1.1.4.0");
+	    if(oid != null){
+	    	editTextChanged.setText(oid.getValue());
+		}
+	    
+	    editTextChanged = (EditText) findViewById(R.id.tab3editText2);
+	    oid = database.getOID("1.3.6.1.2.1.1.5.0");
+	    if(oid != null){
+	    	editTextChanged.setText(oid.getValue());
+		}
+	    
+	    editTextChanged = (EditText) findViewById(R.id.tab3editText3);
+	    oid = database.getOID("1.3.6.1.2.1.1.6.0");
+	    if(oid != null){
+	    	editTextChanged.setText(oid.getValue());
+		}
+	    //  getOID("1.3.6.1.2.1.1.7.0")
+	    oid = database.getOID("1.3.6.1.2.1.1.7.0");
+	    int entero=0;
+	    String bin = "";
+	    if(oid != null){
+	    	entero = Integer.parseInt(oid.getValue());
+		}
+	    while(entero > 0){
+	    	bin += "" + (entero % 2); 
+	    	entero = entero / 2 ;
+	    }
+	    
+	    int tam = bin.length();
+	    CheckBox cb = null;
+	    
+	    cb = (CheckBox) findViewById(R.id.checkBox1);
+	    if (tam >= 1 && bin.charAt(0) == '1' )
+	    	cb.setChecked(true);
+	    else
+	    	cb.setChecked(false);
+	    	
+	    
+	    cb = (CheckBox) findViewById(R.id.checkBox2);
+	    if (tam >= 2 && bin.charAt(1) == '1' )
+	    	cb.setChecked(true);
+	    else
+	    	cb.setChecked(false);
+	    	
+	    
+	    cb = (CheckBox) findViewById(R.id.checkBox3);
+	    if (tam >= 3 && bin.charAt(2) == '1' )
+	    	cb.setChecked(true);
+	    else
+	    	cb.setChecked(false);
+	    	
+	    
+	    cb = (CheckBox) findViewById(R.id.checkBox4);
+	    if (tam >= 4 && bin.charAt(3) == '1' )
+	    	cb.setChecked(true);
+	    else
+	    	cb.setChecked(false);
+	    	
+	    
+	    cb = (CheckBox) findViewById(R.id.checkBox5);
+	    if (tam >= 7 && bin.charAt(6) == '1' )
+	    	cb.setChecked(true);
+	    else
+	    	cb.setChecked(false);
+	    	
+	    
+	    database.cleanup();
+
+		
+		
 	    /* a init(); se le agrego' el @SuppressLint("NewApi") 
 	    porque para el me'todo setOnCheckedChangeListener 
 	    era necesario sacar el warning del API minimun 14 */
@@ -243,12 +392,12 @@ public class AgentDroid extends Activity {
 	    		}
 	    	}); 
 	    	
-	    			    	
-	    } // endIf(Build.VERSION.SDK_INT >= 14) 
-	        
+	    	  
+	    } // if (Build.VERSION.SDK_INT >= 14)
 	    
-	}
-	
+
+	    
+	} // init()
 
 	
 	private static boolean isRunning(Context context, String class_name)
@@ -257,7 +406,7 @@ public class AgentDroid extends Activity {
 		{
 			for (RunningServiceInfo service : ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).getRunningServices(Integer.MAX_VALUE)) 
 			{
-					System.out.println(service.service.getClassName());
+				//System.out.println(service.service.getClassName());
 				if (service.service.getClassName().equals(class_name))
 				{
 					return true;
