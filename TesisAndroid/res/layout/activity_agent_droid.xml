@@ -138,7 +138,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/dtsIpAddress" />
-						
+						<!-- ip -->
 						<EditText
 	         			    android:id="@+id/tab2editText1"
 	         			    android:layout_width="match_parent"
@@ -151,7 +151,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/port" />
-						
+						<!-- port -->
 						<EditText
 	         			    android:id="@+id/tab2editText2"
 	         			    android:layout_width="match_parent"
@@ -165,7 +165,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/community" />
-	                    
+	                    <!-- community -->
 	         			<EditText
 	         			    android:id="@+id/tab2editText3"
 	         			    android:layout_width="match_parent"
@@ -179,7 +179,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/trapType" />
-	         			
+	         			<!-- traptype -->
 	         			<Spinner
 						    android:id="@+id/tab2Spinner1"
 						    android:layout_width="match_parent"
@@ -192,7 +192,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/enterpriseOID" />
-	                    
+	                    <!-- enterprise OID -->
 	         			<EditText
 	         			    android:id="@+id/tab2editText5"
 	         			    android:layout_width="match_parent"
@@ -206,7 +206,7 @@
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/specificTrap"
 	                        android:visibility="gone" />
-	                    
+	                    <!-- specific Trap -->
 	         			<EditText
 	         			    android:id="@+id/tab2editText4"
 	         			    android:layout_width="match_parent"
@@ -220,7 +220,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/retries" />
-	                    
+	                    <!-- Retries -->
 	         			<EditText
 	         			    android:id="@+id/tab2editText6"
 	         			    android:layout_width="match_parent"
@@ -234,7 +234,7 @@
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/timeOut" />
-	                    
+	                    <!-- timeout -->
 	         			<EditText
 	         			    android:id="@+id/tab2editText7"
 	         			    android:layout_width="match_parent"
