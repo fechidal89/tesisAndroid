@@ -3,8 +3,14 @@ package ucv.tesis.tesisandroid;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+
+import android.content.Context;
+import android.os.SystemClock;
 
 import snmp.SNMPBERCodec;
 import snmp.SNMPBadValueException;
@@ -24,11 +30,17 @@ import snmp.SNMPSetException;
 import snmp.SNMPTimeTicks;
 import snmp.SNMPVariablePair;
 import snmp.SNMPv2BulkRequestPDU;
+import ucv.tesis.tesisandroid.DBOIDHelper.ObjIdent;
 
 public class Mibs implements SNMPRequestListener {
 
 	
 	SNMPOctetString storedSNMPValue;
+	Context contextActivity = null;
+	
+	public Mibs(Context cont){
+		this.contextActivity = cont;
+	}
 	
 	@Override
 	public SNMPSequence processRequest(SNMPPDU pdu, String communityName)
@@ -116,8 +128,8 @@ public class Mibs implements SNMPRequestListener {
                 continue;
             }*/
             
-            
-            if (snmpOID.toString().equals("1.3.6.1.2.1.1.4.0"))
+            /* sysDescr  DisplayString | Read-Only | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.1.0"))
             {
                 if (pduType == SNMPBERCodec.SNMPSETREQUEST)
                 {
@@ -134,8 +146,10 @@ public class Mibs implements SNMPRequestListener {
                     // got a get-request for our variable; send back a value - just a string
                     try
                     {
-                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString("Fernando Hidalgo"));
-                        //SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString("Boo"));
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID(snmpOID.toString());
+                    	database.cleanup();
+                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(oid.getValue()));
                         responseList.addSNMPObject(newPair);
                     }
                     catch (SNMPBadValueException e)
@@ -144,12 +158,80 @@ public class Mibs implements SNMPRequestListener {
                     }
                 } 
                 continue;   
-            }
+            } // sysDescr
             
-            if (snmpOID.toString().equals("1.3.6.1.2.1.1.5.0"))
+            /* sysObjectID   DisplayString | Read-Only | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.2.0"))
             {
                 if (pduType == SNMPBERCodec.SNMPSETREQUEST)
                 {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                    // got a get-request for our variable; send back a value - just a string
+                    try
+                    {
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID(snmpOID.toString());
+                    	database.cleanup();
+                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(oid.getValue()));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }
+                } 
+                continue;   
+            } // sysObjectID 
+            
+            
+            /* sysUpTime Integer | Read-Only | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.3.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                    // got a get-request for our variable; send back a value - just a string
+                    try
+                    {
+                    	Date date = new Date(SystemClock.uptimeMillis());
+            		    DateFormat formatter = new SimpleDateFormat("HH:mm:ss.SS");
+            		    String dateFormatted = formatter.format(date);
+                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(dateFormatted));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }
+                } 
+                continue;   
+            } // sysUpTime 
+            
+            /* sysContact DisplayString | Read-Write | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.4.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = 0;
+                    int errorStatus = 0;
                     // got a set-request for our variable; supplied value must be a string
                     if (snmpValue instanceof SNMPOctetString)
                     {
@@ -159,19 +241,24 @@ public class Mibs implements SNMPRequestListener {
                         // return SNMPVariablePair to indicate we've handled this OID
                         try
                         {
+                        	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                        	database.update(snmpOID.toString(), storedSNMPValue.toString() );
+                        	database.cleanup();
                             SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, storedSNMPValue);
                             responseList.addSNMPObject(newPair);
                         }
                         catch (SNMPBadValueException e)
                         {
+                        	errorIndex = i+1;
+                        	errorStatus = SNMPRequestException.FAILED;
                             // won't happen...
                         }
                     
                     }
                     else
                     {
-                        int errorIndex = i+1;
-                        int errorStatus = SNMPRequestException.BAD_VALUE;
+                        errorIndex = i+1;
+                        errorStatus = SNMPRequestException.BAD_VALUE;
                         throw new SNMPSetException("Supplied value must be SNMPOctetString", errorIndex, errorStatus);
                     }
                     
@@ -181,7 +268,10 @@ public class Mibs implements SNMPRequestListener {
                     // got a get-request for our variable; send back a value - just a string
                     try
                     {
-                        SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, storedSNMPValue);
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID(snmpOID.toString());
+                    	database.cleanup();
+                        SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString(oid.getValue()));
                         responseList.addSNMPObject(newPair);
                     }
                     catch (SNMPBadValueException e)
@@ -190,9 +280,154 @@ public class Mibs implements SNMPRequestListener {
                     }
                 } 
                 continue;
-            } // if 
+            } // sysContact 
+            
+            /* sysName DisplayString | Read-Write | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.5.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = 0;
+                    int errorStatus = 0;
+                    // got a set-request for our variable; supplied value must be a string
+                    if (snmpValue instanceof SNMPOctetString)
+                    {
+                        // assign new value
+                        storedSNMPValue = (SNMPOctetString)snmpValue;
+                        
+                        // return SNMPVariablePair to indicate we've handled this OID
+                        try
+                        {
+                        	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                        	database.update(snmpOID.toString(), storedSNMPValue.toString() );
+                        	database.cleanup();
+                            SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, storedSNMPValue);
+                            responseList.addSNMPObject(newPair);
+                        }
+                        catch (SNMPBadValueException e)
+                        {
+                        	errorIndex = i+1;
+                        	errorStatus = SNMPRequestException.FAILED;
+                            // won't happen...
+                        }
+                    
+                    }
+                    else
+                    {
+                        errorIndex = i+1;
+                        errorStatus = SNMPRequestException.BAD_VALUE;
+                        throw new SNMPSetException("Supplied value must be SNMPOctetString", errorIndex, errorStatus);
+                    }
+                    
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                    // got a get-request for our variable; send back a value - just a string
+                    try
+                    {
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID(snmpOID.toString());
+                    	database.cleanup();
+                        SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString(oid.getValue()));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }
+                } 
+                continue;
+            } // sysName 
+            
+            /* sysLocation DisplayString | Read-Write | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.6.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = 0;
+                    int errorStatus = 0;
+                    // got a set-request for our variable; supplied value must be a string
+                    if (snmpValue instanceof SNMPOctetString)
+                    {
+                        // assign new value
+                        storedSNMPValue = (SNMPOctetString)snmpValue;
+                        
+                        // return SNMPVariablePair to indicate we've handled this OID
+                        try
+                        {
+                        	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                        	database.update(snmpOID.toString(), storedSNMPValue.toString() );
+                        	database.cleanup();
+                            SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, storedSNMPValue);
+                            responseList.addSNMPObject(newPair);
+                        }
+                        catch (SNMPBadValueException e)
+                        {
+                        	errorIndex = i+1;
+                        	errorStatus = SNMPRequestException.FAILED;
+                            // won't happen...
+                        }
+                    
+                    }
+                    else
+                    {
+                        errorIndex = i+1;
+                        errorStatus = SNMPRequestException.BAD_VALUE;
+                        throw new SNMPSetException("Supplied value must be SNMPOctetString", errorIndex, errorStatus);
+                    }
+                    
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                    // got a get-request for our variable; send back a value - just a string
+                    try
+                    {
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID(snmpOID.toString());
+                    	database.cleanup();
+                        SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, new SNMPOctetString(oid.getValue()));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }
+                } 
+                continue;
+            } // sysLocation 
             
             
+            /* sysServices   DisplayString | Read-Only | Mandatory */
+            if (snmpOID.toString().equals("1.3.6.1.2.1.1.7.0"))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                    // got a set-request for our variable; throw an exception to indicate the 
+                    // value is read-only - the SNMPv1AgentInterface will create the appropriate
+                    // error message using our supplied error index and status
+                    // note that error index starts at 1, not 0, so it's i+1
+                    int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                    // got a get-request for our variable; send back a value - just a string
+                    try
+                    {
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID(snmpOID.toString());
+                    	database.cleanup();
+                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(oid.getValue()));
+                        responseList.addSNMPObject(newPair);
+                    }
+                    catch (SNMPBadValueException e)
+                    {
+                        // won't happen...
+                    }
+                } 
+                continue;   
+            } // sysServices 
             
             /******************************
              *
@@ -708,14 +943,41 @@ public class Mibs implements SNMPRequestListener {
          // ifAdminStatus Integer | Read-Only | Mandatory | 1.3.6.1.2.1.2.2.1.7.X -> X es el numero de interfaz
             if (snmpOID.toString().startsWith("1.3.6.1.2.1.2.2.1.7."))
             {
-                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
-                {
-                	int errorIndex = i+1;
-                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
-                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
-                }
-                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
-                {
+            	 if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                 {
+                 	int errorIndex = 0;
+                     int errorStatus = 0;
+                     // got a set-request for our variable; supplied value must be a string
+                     if (snmpValue instanceof SNMPInteger)
+                     {
+                                                  
+                         // return SNMPVariablePair to indicate we've handled this OID
+                         try
+                         {
+                         	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                         	database.update(snmpOID.toString(), ""+snmpValue );
+                         	database.cleanup();
+                             SNMPVariablePair newPair = new SNMPVariablePair(snmpOID, snmpValue);
+                             responseList.addSNMPObject(newPair);
+                         }
+                         catch (SNMPBadValueException e)
+                         {
+                         	errorIndex = i+1;
+                         	errorStatus = SNMPRequestException.FAILED;
+                             // won't happen...
+                         }
+                     
+                     }
+                     else
+                     {
+                         errorIndex = i+1;
+                         errorStatus = SNMPRequestException.BAD_VALUE;
+                         throw new SNMPSetException("Supplied value must be SNMPInteger", errorIndex, errorStatus);
+                     }
+                     
+                 }
+                 else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                 {
 
                 	int eth=0; // interfaz solicitada
                 	int nIf=0; // numero de interfaces
@@ -752,28 +1014,11 @@ public class Mibs implements SNMPRequestListener {
 					if( 1 <= eth && eth <= nIf ){
 	                    try
 	                    {
-	                    	cmd="cat /sys/class/net/"+arrIf.get(eth-1)+"/operstate\n";
-	                    	p = Runtime.getRuntime().exec(cmd);
-							in2 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							status = in2.readLine();
-							// el comando devuelve String lo busco segun el RFC2863
-							if(status.equalsIgnoreCase("up")){
-								oper = 1;
-							}else if(status.equalsIgnoreCase("down")){
-								oper = 2;
-							}else if(status.equalsIgnoreCase("testing")){								
-								oper = 3;
-							}else if(status.equalsIgnoreCase("unknown")){
-								oper = 4;
-							}else if(status.equalsIgnoreCase("dormant")){
-								oper = 5;
-							}else if(status.equalsIgnoreCase("notPresent")){
-								oper = 6;
-							}else{ // lowerLayerDown
-								oper = 7;
-							}
-							
-	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(oper));
+	                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+	                    	ObjIdent oid = database.getOID(snmpOID.toString());
+	                    	database.cleanup();
+	                    	
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(Integer.parseInt(oid.getValue())));
 	                        responseList.addSNMPObject(newPair);
 	                    }
 	                    catch (SNMPBadValueException e)
@@ -6689,7 +6934,7 @@ public class Mibs implements SNMPRequestListener {
             
         } // for
         
-        System.out.println("\n");
+        /*System.out.println("\n");
         System.out.println("RESPUESTA DE GETREQUEST");
         for (int i = 0; i < responseList.size(); i++)
         {
@@ -6701,7 +6946,7 @@ public class Mibs implements SNMPRequestListener {
             System.out.println("value:    " + snmpValue + "\n");
             
         }
-        // return the created list of variable pairs
+        return the created list of variable pairs*/
         return responseList;
         
     
