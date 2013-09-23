@@ -19,6 +19,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    
 	    public SNMPTreeGetNextRequest(T data) {
 	        this.data = data;
+	        this.tableOrEntry = true;
 	        this.children = new LinkedList<SNMPTreeGetNextRequest<T>>();
 	    }
 	    public SNMPTreeGetNextRequest(SNMPTreeGetNextRequest<T> node) {
@@ -109,10 +110,11 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    }
 	
 	    public String GetNext(){
-	    	
+	    	System.out.println(this.data + " " + this.tableOrEntry);
 	    	if(this.tableOrEntry){
 	    		if(this.children != null && this.children.size() > 0){
 	    			SNMPTreeGetNextRequest<T> node = this.children.get(0);
+	    			System.out.println(node.data);
 	    			while(node.tableOrEntry){
 	    				if(node.children != null && node.children.size() > 0){
 	    	    			node = node.children.get(0);
@@ -121,6 +123,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    			return node.data.toString();
 	    		}	    			
 	    	}else{
+	    		System.out.println("por el else");
 	    		if(this.nNext != null){
 	    			SNMPTreeGetNextRequest<T> node = this.nNext;
 	    			while(node.tableOrEntry){
@@ -135,6 +138,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    			}
 	    			return node.data.toString();
 	    		}else{
+	    			System.out.println("yo mismo");
 	    			return this.data.toString();
 	    		}
 	    	}
@@ -161,7 +165,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		/**
 	    		 * SYSTEM
 	    		 */	    		
-	    		SNMPTreeGetNextRequest<String> system = root.addNode("1.3.6.1.2.1.1.0", true);
+	    		SNMPTreeGetNextRequest<String> system = root.addNode("1.3.6.1.2.1.1", true);
 	    		system.addLeaf("1.3.6.1.2.1.1.1.0"); //sysDescr
 	    		system.addLeaf("1.3.6.1.2.1.1.2.0"); //sysObjectID
 	    		system.addLeaf("1.3.6.1.2.1.1.3.0"); //sysUpTime
@@ -861,7 +865,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 					/**
 		    		 * SNMP
 		    		 */
-		    		SNMPTreeGetNextRequest<String> snmp = root.addNode("1.3.6.1.2.1.11", false);
+		    		root.addLeaf("1.3.6.1.2.1.11"); // 
 		    		
 	    		}
 	    		
