@@ -10,7 +10,8 @@
     
     
     <!-- TAB 1 - Config Agent  -->
-    <string name="community">Community:</string>
+    <string name="communityRO">Community Read-Only:</string>
+    <string name="communityRW">Community Read-Write:</string>
     <string name="communityDefault">Public</string>
     <string name="port">Port:</string>
     <string name="portDefault">161</string>
@@ -34,9 +35,10 @@
     <string name="port">Port:</string> 
     -->
     <string name="portDefaultTraps">162</string>
-    <!-- 
+     
     <string name="community">Community:</string>
-    <string name="communityDefault">Public</string>
+   	<!-- 
+   	<string name="communityDefault">Public</string>
      -->
     <string name="trapType">Trap Type:</string>
     <string name="specificTrap">Specific Trap:</string>
@@ -56,7 +58,17 @@
     <string name="sysLocation">sysLocation (.6):</string>
     <string name="sysServices">sysServices (.7):</string>
     
-    
+    <string name="physical">physical</string>
+	<string name="datalink_subnetwork">datalink/subnetwork</string>
+	<string name="internet">internet</string>
+	<string name="end_to_end">end-to-end</string>
+	<string name="applications">applications</string>
+	<string name="bSave">Save</string>
+	
+	
+	<string name="vacio"></string>
+	
+     
         
 
 </resources>
