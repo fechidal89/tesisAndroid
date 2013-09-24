@@ -7,9 +7,15 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.SystemClock;
 
 import snmp.SNMPBERCodec;
@@ -42,10 +48,18 @@ public class Mibs implements SNMPRequestListener {
 		this.contextActivity = cont;
 	}
 	
+	/**
+	 * 
+	 * Para enviar cadenas con tilde setear la variable sendWithoutTittle = false
+	 * por defecto sendWithoutTittle = true
+	 * 
+	 */
+	
+	@SuppressLint("NewApi")
 	@Override
 	public SNMPSequence processRequest(SNMPPDU pdu, String communityName)
 			throws SNMPGetException, SNMPSetException {
-		// TODO Auto-generated method stub
+		boolean sendWithoutTittle = true;
 	    byte pduType = pdu.getPDUType();
         switch (pduType)
         {
@@ -6932,6 +6946,316 @@ public class Mibs implements SNMPRequestListener {
             
             
             
+            /**
+             * 
+             * hrSWInstalledTable
+             * .1.3.6.1.2.1.25.6.3
+             * 
+             */
+            
+            // hrSWInstalledIndex Integer32 | Read-Only | Current | 1.3.6.1.2.1.25.6.3.1.1.X -> X es el numero de SW
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.25.6.3.1.1."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	
+                	PackageManager pm = contextActivity.getPackageManager();
+                	ArrayList<ApplicationInfo> l = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(ApplicationInfo.FLAG_INSTALLED);
+                	int nSW = 0, nTSW = l.size();
+            	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
+            	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
+            			System.out.println(pInfo.packageName);
+            		}*/
+					
+					// Pregunto cual SW que esta solicitando
+					try {
+						nSW =  Integer.parseInt(snmpOID.toString().substring(23, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de SW solicitado esta, busco el valor y lo envio
+					if( 1 <= nSW && nSW <= nTSW ){
+	                    try
+	                    {
+	                        SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(nSW));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // hrSWInstalledIndex
+            
+            // hrSWInstalledName InternationalDisplayString | Read-Only | Current | 1.3.6.1.2.1.25.6.3.1.2.X -> X es el numero de SW
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.25.6.3.1.2."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	
+                	PackageManager pm = contextActivity.getPackageManager();
+                	ArrayList<ApplicationInfo> l = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(ApplicationInfo.FLAG_INSTALLED);
+                	int nSW = 0, nTSW = l.size();
+            	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
+            	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
+            			System.out.println(++nSW + " " + pInfo.packageName);
+            		}*/
+					
+					// Pregunto cual SW que esta solicitando
+					try {
+						nSW =  Integer.parseInt(snmpOID.toString().substring(23, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de SW solicitado esta, busco el valor y lo envio
+					if( 1 <= nSW && nSW <= nTSW ){
+	                    try
+	                    {
+	                    	String name = "unknown";
+	                    	ApplicationInfo ai = l.get(nSW-1);
+	                    	
+	                    	if(ai != null){
+	                    		PackageInfo pi = pm.getPackageInfo(ai.packageName, PackageManager.GET_ACTIVITIES);
+		                		name = new String((String) pm.getApplicationLabel(ai));
+	                    		if(sendWithoutTittle){
+	                    			name = name.replace("á", "a"); name = name.replace("Á", "A");
+	                    			name = name.replace("é", "e"); name = name.replace("É", "E");
+	                    			name = name.replace("í", "i"); name = name.replace("Í", "I");
+	                    			name = name.replace("ó", "o"); name = name.replace("Ó", "O");
+	                    			name = name.replace("ú", "u"); name = name.replace("Ú", "U");
+	                    			name = name.replace("ñ", "ñ"); name = name.replace("Ñ", "N");
+	                    		}
+	                    		name += ", " + pi.versionName + ", " + pi.packageName;
+		                    }
+	                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(name));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // hrSWInstalledName
+            
+         // hrSWInstalledID ProductID | Read-Only | Current | 1.3.6.1.2.1.25.6.3.1.3.X -> X es el numero de SW
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.25.6.3.1.3."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	
+                	PackageManager pm = contextActivity.getPackageManager();
+                	ArrayList<ApplicationInfo> l = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(ApplicationInfo.FLAG_INSTALLED);
+                	int nSW = 0, nTSW = l.size();
+            	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
+            	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
+            			System.out.println(pInfo.packageName);
+            		}*/
+					
+					// Pregunto cual SW que esta solicitando
+					try {
+						nSW =  Integer.parseInt(snmpOID.toString().substring(23, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de SW solicitado esta, busco el valor y lo envio
+					if( 1 <= nSW && nSW <= nTSW ){
+	                    try
+	                    {
+	                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPObjectIdentifier("0.0"));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // hrSWInstalledID
+            
+            
+            // hrSWInstalledType Integer | Read-Only | Current | 1.3.6.1.2.1.25.6.3.1.4.X -> X es el numero de SW
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.25.6.3.1.4."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	
+                	PackageManager pm = contextActivity.getPackageManager();
+                	ArrayList<ApplicationInfo> l = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(ApplicationInfo.FLAG_INSTALLED);
+                	int nSW = 0, nTSW = l.size();
+            	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
+            	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
+            			System.out.println(pInfo.packageName);
+            		}*/
+					
+					// Pregunto cual SW que esta solicitando
+					try {
+						nSW =  Integer.parseInt(snmpOID.toString().substring(23, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de SW solicitado esta, busco el valor y lo envio
+					if( 1 <= nSW && nSW <= nTSW ){
+	                    try
+	                    {
+	                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(4));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // hrSWInstalledType
+            
+            // hrSWInstalledDate DateAndTime | Read-Only | Current | 1.3.6.1.2.1.25.6.3.1.5.X -> X es el numero de SW
+            if (snmpOID.toString().startsWith("1.3.6.1.2.1.25.6.3.1.5."))
+            {
+                if (pduType == SNMPBERCodec.SNMPSETREQUEST)
+                {
+                	int errorIndex = i+1;
+                    int errorStatus = SNMPRequestException.VALUE_READ_ONLY;
+                    throw new SNMPSetException("Trying to set a read-only variable!", errorIndex, errorStatus);
+                }
+                else if (pduType == SNMPBERCodec.SNMPGETREQUEST)
+                {
+                	
+                	PackageManager pm = contextActivity.getPackageManager();
+                	ArrayList<ApplicationInfo> l = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(ApplicationInfo.FLAG_INSTALLED);
+                	int nSW = 0, nTSW = l.size();
+            	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
+            	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
+            			System.out.println(pInfo.packageName);
+            		}*/
+					
+					// Pregunto cual SW que esta solicitando
+					try {
+						nSW =  Integer.parseInt(snmpOID.toString().substring(23, snmpOID.toString().length()));
+					}catch (NumberFormatException e) {
+						e.printStackTrace();
+					}
+                		
+                	// si el numero de SW solicitado esta, busco el valor y lo envio
+					if( 1 <= nSW && nSW <= nTSW ){
+	                    try
+	                    {
+	                    	String dateHex = "00:00:01:01:00:00:00:00"; // DEFAULT: January 1, year 0000
+	                    	ApplicationInfo ai = l.get(nSW-1);
+	                    	Long datetime = Long.valueOf(0);
+	                    	if(ai != null){
+	                    		PackageInfo pi = pm.getPackageInfo(ai.packageName, PackageManager.GET_ACTIVITIES);
+	                    		datetime = pi.lastUpdateTime;
+	                    		Calendar cal = Calendar.getInstance();
+	                    		cal.setTimeInMillis(datetime);
+	                    		int year = cal.get(Calendar.YEAR);
+	                    		int month = cal.get(Calendar.MONTH);
+	                    		int day = cal.get(Calendar.DATE);
+	                    		int hour = cal.get(Calendar.HOUR);
+	                    		int minute = cal.get(Calendar.MINUTE);
+	                    		int second = cal.get(Calendar.SECOND);
+	                    		int millisecond = cal.get(Calendar.MILLISECOND);
+	                    		
+	                    		String sYear = Integer.toHexString(year);
+	                    		if(sYear.length() == 3)
+	                    			sYear = "0" + sYear.charAt(0)+ ":" + sYear.substring(1);
+	                    		else if (sYear.length() == 4)
+	                    			sYear = sYear.charAt(0)+ sYear.charAt(1)+ ":" + sYear.substring(1);
+	                    		
+	                    		
+	                    		dateHex =  sYear +":"+ 
+	                    		((Integer.toHexString(month).length()==1)? "0"+Integer.toHexString(month):Integer.toHexString(month)) +":"+
+	                    		((Integer.toHexString(day).length()==1)? "0"+Integer.toHexString(day):Integer.toHexString(day)) +":"+
+	                    		((Integer.toHexString(hour).length()==1)? "0"+Integer.toHexString(hour):Integer.toHexString(hour)) +":"+
+	                    		((Integer.toHexString(minute).length()==1)? "0"+Integer.toHexString(minute):Integer.toHexString(minute)) +":"+
+	                    		((Integer.toHexString(second).length()==1)? "0"+Integer.toHexString(second):Integer.toHexString(second)) +":"+
+	                    		((Integer.toHexString(millisecond).length()==1)? "0"+Integer.toHexString(millisecond):Integer.toHexString(millisecond));
+	                    	}	                    	
+	                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(dateHex));
+	                        responseList.addSNMPObject(newPair);
+	                    }
+	                    catch (SNMPBadValueException e)
+	                    {
+	                        // won't happen...
+	                    }catch (Exception e)
+	                    {
+	                    	e.printStackTrace();
+	                    }
+					}else{
+						int errorIndex = i+1;
+	                    int errorStatus = SNMPRequestException.VALUE_NOT_AVAILABLE;
+	                    throw new SNMPSetException("Valor fuera de rango del número interfaces", errorIndex, errorStatus);						
+					}
+                	                	
+                } 
+                continue;
+            } // hrSWInstalledType
+            
         } // for
         
         /*System.out.println("\n");
@@ -6956,7 +7280,7 @@ public class Mibs implements SNMPRequestListener {
 	public SNMPSequence processGetNextRequest(SNMPPDU PDU,
 			String communityName) throws SNMPGetException{
 
-		SNMPTreeGetNextRequest<String> treeRoot = SNMPTreeGetNextRequest.SNMPTreeLoad();
+		SNMPTreeGetNextRequest<String> treeRoot = SNMPTreeGetNextRequest.SNMPTreeLoad(contextActivity);
 		SNMPSequence varBindList = PDU.getVarBindList();
 		SNMPSequence newList = new SNMPSequence();
 		
@@ -7006,7 +7330,7 @@ public class Mibs implements SNMPRequestListener {
 		int N = PDU.getNonRepeaters();
 		int maxRep = PDU.getMaxRepetitions();
 		int R = L - N;
-		SNMPTreeGetNextRequest<String> treeGetNext = SNMPTreeGetNextRequest.SNMPTreeLoad();
+		SNMPTreeGetNextRequest<String> treeGetNext = SNMPTreeGetNextRequest.SNMPTreeLoad(contextActivity);
 		
 		for (int i = 0 ; i < maxRep ; i++) {	
 			for(int j = 0 ; j < R ; j++){
@@ -7041,7 +7365,6 @@ public class Mibs implements SNMPRequestListener {
 		} catch (SNMPBadValueException e) {
 			e.printStackTrace();
 		}
-		System.out.println("hola getBulkRequest");
 		
 		return respList;
 	}
