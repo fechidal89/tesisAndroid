@@ -7,6 +7,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+
 public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextRequest<T>> {
 
 	
@@ -110,11 +115,11 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    }
 	
 	    public String GetNext(){
-	    	System.out.println(this.data + " " + this.tableOrEntry);
+	    	//System.out.println(this.data + " " + this.tableOrEntry);
 	    	if(this.tableOrEntry){
 	    		if(this.children != null && this.children.size() > 0){
 	    			SNMPTreeGetNextRequest<T> node = this.children.get(0);
-	    			System.out.println(node.data);
+	    			//System.out.println(node.data);
 	    			while(node.tableOrEntry){
 	    				if(node.children != null && node.children.size() > 0){
 	    	    			node = node.children.get(0);
@@ -123,7 +128,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    			return node.data.toString();
 	    		}	    			
 	    	}else{
-	    		System.out.println("por el else");
+	    		//System.out.println("por el else");
 	    		if(this.nNext != null){
 	    			SNMPTreeGetNextRequest<T> node = this.nNext;
 	    			while(node.tableOrEntry){
@@ -138,7 +143,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    			}
 	    			return node.data.toString();
 	    		}else{
-	    			System.out.println("yo mismo");
+	    			//System.out.println("yo mismo");
 	    			return this.data.toString();
 	    		}
 	    	}
@@ -158,7 +163,8 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	            return iter;
 	    }
 	    
-	    public static SNMPTreeGetNextRequest<String> SNMPTreeLoad()
+	    @SuppressLint("InlinedApi")
+		public static SNMPTreeGetNextRequest<String> SNMPTreeLoad(Context contAct )
 	    {
 	    	SNMPTreeGetNextRequest<String> root = new SNMPTreeGetNextRequest<String>("1.3.6.1.2.1");
 	    	{
@@ -862,13 +868,73 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 		            	
 					}//udpEntry
 					
-					/**
-		    		 * SNMP
-		    		 */
-		    		root.addLeaf("1.3.6.1.2.1.11"); // 
-		    		
 	    		}
-	    		
+
+				/**
+	    		 * HOST-RESOURSES-MIB hrSWInstalled 1.3.6.1.2.1.25.6
+	    		 */
+				SNMPTreeGetNextRequest<String> hostResources = root.addNode("1.3.6.1.2.1.25", true);
+	    		{
+	    			// hrSWInstalled 1.3.6.1.2.1.25.6
+	    			SNMPTreeGetNextRequest<String> hrSWInstalled = hostResources.addNode("1.3.6.1.2.1.25.6", true);
+	    			{
+	    				// hrSWInstalledTable 1.3.6.1.2.1.25.6.3
+	    				SNMPTreeGetNextRequest<String> hrSWInstalledTable = hrSWInstalled.addNode("1.3.6.1.2.1.25.6.3", true);
+		    			{
+		    				// hrSWInstalledEntry 1.3.6.1.2.1.25.6.3.1
+		    				SNMPTreeGetNextRequest<String> hrSWInstalledEntry = hrSWInstalledTable.addNode("1.3.6.1.2.1.25.6.3.1", true);
+			    			{
+			    				PackageManager pm = contAct.getPackageManager();
+			                	ArrayList<ApplicationInfo> l = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(ApplicationInfo.FLAG_INSTALLED);
+			                	int nSW = 0, nTSW = l.size();
+			            	   
+			    				// hrSWInstalledIndex 1.3.6.1.2.1.25.6.3.1.1
+			    				SNMPTreeGetNextRequest<String> hrSWInstalledIndex = hrSWInstalledEntry.addNode("1.3.6.1.2.1.25.6.3.1.1", true);
+				    			{
+				    				for(nSW = 1 ; nSW <= nTSW ; nSW++){
+				    					hrSWInstalledIndex.addLeaf("1.3.6.1.2.1.25.6.3.1.1."+nSW);
+				    				}
+				    			}
+				    			
+				    			// hrSWInstalledName 1.3.6.1.2.1.25.6.3.1.2
+			    				SNMPTreeGetNextRequest<String> hrSWInstalledName = hrSWInstalledEntry.addNode("1.3.6.1.2.1.25.6.3.1.2", true);
+				    			{
+				    				for(nSW = 1 ; nSW <= nTSW ; nSW++){
+				    					hrSWInstalledName.addLeaf("1.3.6.1.2.1.25.6.3.1.2."+nSW);
+				    				}
+				    			}
+				    			
+				    			// hrSWInstalledID 1.3.6.1.2.1.25.6.3.1.3
+			    				SNMPTreeGetNextRequest<String> hrSWInstalledID = hrSWInstalledEntry.addNode("1.3.6.1.2.1.25.6.3.1.3", true);
+				    			{
+				    				for(nSW = 1 ; nSW <= nTSW ; nSW++){
+				    					hrSWInstalledID.addLeaf("1.3.6.1.2.1.25.6.3.1.3."+nSW);
+				    				}
+				    			}
+				    			
+				    			// hrSWInstalledType 1.3.6.1.2.1.25.6.3.1.4
+			    				SNMPTreeGetNextRequest<String> hrSWInstalledType = hrSWInstalledEntry.addNode("1.3.6.1.2.1.25.6.3.1.4", true);
+				    			{
+				    				for(nSW = 1 ; nSW <= nTSW ; nSW++){
+				    					hrSWInstalledType.addLeaf("1.3.6.1.2.1.25.6.3.1.4."+nSW);
+				    				}
+				    			}
+				    			
+				    			// hrSWInstalledDate 1.3.6.1.2.1.25.6.3.1.5
+			    				SNMPTreeGetNextRequest<String> hrSWInstalledDate = hrSWInstalledEntry.addNode("1.3.6.1.2.1.25.6.3.1.5", true);
+				    			{
+				    				for(nSW = 1 ; nSW <= nTSW ; nSW++){
+				    					hrSWInstalledDate.addLeaf("1.3.6.1.2.1.25.6.3.1.5."+nSW);
+				    				}
+				    			}
+			    			}
+		    			}		    				
+	    				
+	    			}
+	    		}
+	    		             
+	    		root.addLeaf("1.3.6.1.2.1.26");
+
 	    	} // root
 	    	
 	    	for (SNMPTreeGetNextRequest<String> node : root) {
@@ -888,7 +954,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	                    }
                 	}
                 }
-                //System.out.println(indent + node.data + " | " + node.tableOrEntry + " | " + node.nNext);                
+                //.out.println(indent + node.data/* + " | " + node.tableOrEntry + " | " + node.nNext*/);                
 	    	}
 	    	
 	    	return root;	    	
