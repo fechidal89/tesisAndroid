@@ -2,14 +2,17 @@ package ucv.tesis.tesisandroid;
 
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+
 
 
 import snmp.SNMPBadValueException;
@@ -48,8 +51,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TabHost;
+import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -102,7 +107,7 @@ public class AgentDroid extends Activity {
 	        isBound = false;
 	        myService = null;
 	        Toast.makeText(getApplicationContext(),
-                    "AgentDroid DISCONNECTED to AGENT  ", Toast.LENGTH_LONG).show();
+                    "AgentDroid Disconnected to AGENT  ", Toast.LENGTH_LONG).show();
 	    }
 	    
 	};
@@ -122,12 +127,16 @@ public class AgentDroid extends Activity {
         
         specs = tabHost.newTabSpec("tag2");
         specs.setContent(R.id.tab2);
-        specs.setIndicator("Sender Traps");
+        specs.setIndicator("Traps v1");
         tabHost.addTab(specs);
-        
         
         specs = tabHost.newTabSpec("tag3");
         specs.setContent(R.id.tab3);
+        specs.setIndicator("Traps v2c");
+        tabHost.addTab(specs);
+        
+        specs = tabHost.newTabSpec("tag4");
+        specs.setContent(R.id.tab4);
         specs.setIndicator("System Group");
         tabHost.addTab(specs);
 
@@ -146,12 +155,244 @@ public class AgentDroid extends Activity {
         			label.setVisibility(View.VISIBLE);
         			text.setVisibility(View.VISIBLE);
         		}else{
-        			label.setVisibility(View.INVISIBLE);
-        			text.setVisibility(View.INVISIBLE);
+        			label.setVisibility(View.GONE);
+        			text.setVisibility(View.GONE);
         		}	        		
         	}
         	public void onNothingSelected(AdapterView<?> parentView){;}
         }); 
+        
+        
+        Spinner tab3ComboBoxCommand = (Spinner) findViewById(R.id.tab3ComboBoxCommand);
+        adapterCombo =  ArrayAdapter.createFromResource(this, R.array.selectOpcionStrings, 
+        								android.R.layout.simple_spinner_item);
+        adapterCombo.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+        tab3ComboBoxCommand.setAdapter(adapterCombo);
+        tab3ComboBoxCommand.setOnItemSelectedListener(new OnItemSelectedListener(){
+        	
+        	public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int pos, long id){
+        		TextView textTrapType = (TextView) findViewById(R.id.tab3TextTrapType);
+        		Spinner comboBoxTrapType = (Spinner) findViewById(R.id.tab3ComboBoxTrapType);
+        		TextView tab3TextEnterprise = (TextView) findViewById(R.id.tab3TextEnterprise);
+        		EditText tab3EditEnterpriseOID = (EditText) findViewById(R.id.tab3EditEnterpriseOID);
+        		TextView tab3TextTrapOID = (TextView) findViewById(R.id.tab3TextTrapOID);
+        		EditText tab3EditTrapOID = (EditText) findViewById(R.id.tab3EditTrapOID);
+        		TextView tab3TextDescription = (TextView) findViewById(R.id.tab3TextDescription);
+        		EditText tab3EditDescription = (EditText) findViewById(R.id.tab3EditDescription);
+        		TextView tab3TextDataType = (TextView) findViewById(R.id.tab3TextDataType);
+        		Spinner tab3ComboBoxDataType = (Spinner) findViewById(R.id.tab3ComboBoxDataType);
+        		Button b = (Button) findViewById(R.id.tab3ButtonTrap);
+        		
+        		if(parentView.getItemAtPosition(pos).toString().equalsIgnoreCase("Inform")){
+        			b.setText(R.string.bInform);
+        			textTrapType.setVisibility(View.GONE);
+        			comboBoxTrapType.setVisibility(View.GONE);
+        			tab3TextEnterprise.setVisibility(View.VISIBLE);
+        			tab3EditEnterpriseOID.setVisibility(View.VISIBLE);
+        			tab3TextTrapOID.setVisibility(View.VISIBLE);
+        			tab3EditTrapOID.setVisibility(View.VISIBLE);
+        			tab3TextDescription.setVisibility(View.VISIBLE);
+        			tab3EditDescription.setVisibility(View.VISIBLE);
+        			tab3TextDataType.setVisibility(View.VISIBLE);
+        			tab3ComboBoxDataType.setVisibility(View.VISIBLE);
+        		}else if(parentView.getItemAtPosition(pos).toString().equalsIgnoreCase("Trap")){
+        			b.setText(R.string.bTraps);
+        			textTrapType.setVisibility(View.VISIBLE);
+        			comboBoxTrapType.setVisibility(View.VISIBLE);
+        			tab3TextEnterprise.setVisibility(View.GONE);
+        			tab3EditEnterpriseOID.setVisibility(View.GONE);
+        			tab3TextTrapOID.setVisibility(View.GONE);
+        			tab3EditTrapOID.setVisibility(View.GONE);
+        			tab3TextDescription.setVisibility(View.GONE);
+        			tab3EditDescription.setVisibility(View.GONE);
+        			tab3TextDataType.setVisibility(View.GONE);
+        			tab3ComboBoxDataType.setVisibility(View.GONE);
+        		}	        		
+        	}
+        	public void onNothingSelected(AdapterView<?> parentView){;}
+        });
+        
+        Spinner tab3ComboBoxTrapType = (Spinner) findViewById(R.id.tab3ComboBoxTrapType);
+        adapterCombo =  ArrayAdapter.createFromResource(this, R.array.typetrapsv2c, 
+        								android.R.layout.simple_spinner_item);
+        adapterCombo.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+        tab3ComboBoxTrapType.setAdapter(adapterCombo);
+        tab3ComboBoxTrapType.setOnItemSelectedListener(new OnItemSelectedListener(){
+        	
+        	public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int pos, long id){
+        		TextView tab3TextEnterprise = (TextView) findViewById(R.id.tab3TextEnterprise);
+        		EditText tab3EditEnterpriseOID = (EditText) findViewById(R.id.tab3EditEnterpriseOID);
+        		TextView tab3TextTrapOID = (TextView) findViewById(R.id.tab3TextTrapOID);
+        		EditText tab3EditTrapOID = (EditText) findViewById(R.id.tab3EditTrapOID);
+        		TextView tab3TextDescription = (TextView) findViewById(R.id.tab3TextDescription);
+        		EditText tab3EditDescription = (EditText) findViewById(R.id.tab3EditDescription);
+        		TextView tab3TextDataType = (TextView) findViewById(R.id.tab3TextDataType);
+        		Spinner tab3ComboBoxDataType = (Spinner) findViewById(R.id.tab3ComboBoxDataType);
+        		
+        		if(parentView.getItemAtPosition(pos).toString().equalsIgnoreCase("Other")){
+        			tab3TextEnterprise.setVisibility(View.VISIBLE);
+        			tab3EditEnterpriseOID.setVisibility(View.VISIBLE);
+        			tab3TextTrapOID.setVisibility(View.VISIBLE);
+        			tab3EditTrapOID.setVisibility(View.VISIBLE);
+        			tab3TextDescription.setVisibility(View.VISIBLE);
+        			tab3EditDescription.setVisibility(View.VISIBLE);
+        			tab3TextDataType.setVisibility(View.VISIBLE);
+        			tab3ComboBoxDataType.setVisibility(View.VISIBLE);
+        		}else{
+        			tab3TextEnterprise.setVisibility(View.GONE);
+        			tab3EditEnterpriseOID.setVisibility(View.GONE);
+        			tab3TextTrapOID.setVisibility(View.GONE);
+        			tab3EditTrapOID.setVisibility(View.GONE);
+        			tab3TextDescription.setVisibility(View.GONE);
+        			tab3EditDescription.setVisibility(View.GONE);
+        			tab3TextDataType.setVisibility(View.GONE);
+        			tab3ComboBoxDataType.setVisibility(View.GONE);
+        		}		        		
+        	}
+        	public void onNothingSelected(AdapterView<?> parentView){;}
+        });
+        
+        Spinner tab3ComboBoxDataType = (Spinner) findViewById(R.id.tab3ComboBoxDataType);
+        adapterCombo =  ArrayAdapter.createFromResource(this, R.array.datatype, 
+        								android.R.layout.simple_spinner_item);
+        adapterCombo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        tab3ComboBoxDataType.setAdapter(adapterCombo);
+        tab3ComboBoxDataType.setOnItemSelectedListener(new OnItemSelectedListener(){
+        	
+        	public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int pos, long id){
+        			        		
+        	}
+        	public void onNothingSelected(AdapterView<?> parentView){;}
+        }); 
+        
+        getTabHost().setOnTabChangedListener(new OnTabChangeListener() {
+
+        	@Override
+        	public void onTabChanged(String tabId) {
+
+        	int i = getTabHost().getCurrentTab();
+        	
+        	if (i == 3) { // Si cambio al TAB4 entonces refresca...
+    	    	try {
+    	    		DBOIDHelper database = new DBOIDHelper(getBaseContext());
+      	    		TextView txtChanged = (TextView) findViewById(R.id.tab4textView11);
+    	    		ObjIdent oid = null;
+    	    		oid = database.getOID("1.3.6.1.2.1.1.1.0");
+    	    		if(oid != null){
+    	    			txtChanged.setText(oid.getValue());
+    	    		}
+    	    		
+    	    		oid = database.getOID("1.3.6.1.2.1.1.2.0");
+    	    		txtChanged = (TextView) findViewById(R.id.tab4textView21);
+    	    		if(oid != null){
+    	    			txtChanged.setText(oid.getValue());
+    	    		}
+    	    		//  getOID("1.3.6.1.2.1.1.3.0")
+    	    	    
+    	    	    EditText editTextChanged;
+    	    	    editTextChanged = (EditText) findViewById(R.id.tab4editText1);
+    	    	    oid = database.getOID("1.3.6.1.2.1.1.4.0");
+    	    	    if(oid != null){
+    	    	    	editTextChanged.setText(oid.getValue());
+    	    		}
+    	    	    
+    	    	    editTextChanged = (EditText) findViewById(R.id.tab4editText2);
+    	    	    oid = database.getOID("1.3.6.1.2.1.1.5.0");
+    	    	    if(oid != null){
+    	    	    	editTextChanged.setText(oid.getValue());
+    	    		}
+    	    	    
+    	    	    editTextChanged = (EditText) findViewById(R.id.tab4editText3);
+    	    	    oid = database.getOID("1.3.6.1.2.1.1.6.0");
+    	    	    if(oid != null){
+    	    	    	editTextChanged.setText(oid.getValue());
+    	    		}
+    	    	    //  getOID("1.3.6.1.2.1.1.7.0")
+    	    	    oid = database.getOID("1.3.6.1.2.1.1.7.0");
+    	    	    int entero=0;
+    	    	    String bin = "";
+    	    	    if(oid != null){
+    	    	    	entero = Integer.parseInt(oid.getValue());
+    	    		}
+    	    	    while(entero > 0){
+    	    	    	bin += "" + (entero % 2); 
+    	    	    	entero = entero / 2 ;
+    	    	    }
+    	    	    
+    	    	    int tam = bin.length();
+    	    	    CheckBox cb = null;
+    	    	    
+    	    	    cb = (CheckBox) findViewById(R.id.checkBox1);
+    	    	    if (tam >= 1 && bin.charAt(0) == '1' )
+    	    	    	cb.setChecked(true);
+    	    	    else
+    	    	    	cb.setChecked(false);
+    	    	    	
+    	    	    
+    	    	    cb = (CheckBox) findViewById(R.id.checkBox2);
+    	    	    if (tam >= 2 && bin.charAt(1) == '1' )
+    	    	    	cb.setChecked(true);
+    	    	    else
+    	    	    	cb.setChecked(false);
+    	    	    	
+    	    	    
+    	    	    cb = (CheckBox) findViewById(R.id.checkBox3);
+    	    	    if (tam >= 3 && bin.charAt(2) == '1' )
+    	    	    	cb.setChecked(true);
+    	    	    else
+    	    	    	cb.setChecked(false);
+    	    	    	
+    	    	    
+    	    	    cb = (CheckBox) findViewById(R.id.checkBox4);
+    	    	    if (tam >= 4 && bin.charAt(3) == '1' )
+    	    	    	cb.setChecked(true);
+    	    	    else
+    	    	    	cb.setChecked(false);
+    	    	    	
+    	    	    
+    	    	    cb = (CheckBox) findViewById(R.id.checkBox5);
+    	    	    if (tam >= 7 && bin.charAt(6) == '1' )
+    	    	    	cb.setChecked(true);
+    	    	    else
+    	    	    	cb.setChecked(false);
+    	    	    	
+    	    	    oid = database.getOID("1.3.6.1.2.1.1.3.0");
+    	    		txtChanged = (TextView) findViewById(R.id.tab4textView31);
+    		    	BigInteger timeInit = new BigInteger(oid.getValue());
+    		    	Long t = System.currentTimeMillis();
+    		    	BigInteger timeNow = new BigInteger(t.toString());    		    	
+    		    	
+    		    	if(timeInit.compareTo(BigInteger.ONE) == 1){
+    					
+    					long milliseconds = timeNow.subtract(timeInit).longValue();
+    					
+					    long seconds = milliseconds / 1000;
+					    milliseconds  %= 1000;
+					    long minutes = seconds / 60;
+					    seconds %= 60;
+					    long hours = minutes / 60;
+					    minutes %= 60;
+					    hours %= 24;
+					    String h = ""+hours;
+					    String m = ""+minutes;
+					    String s = ""+seconds;
+					    
+					    txtChanged.setText(((h.length()==1)?"0"+h:h)+":"+((m.length()==1)?"0"+m:m)+":"+((s.length()==1)?"0"+s:s)+"."+milliseconds);
+    					
+    				}else{
+    					txtChanged.setText("0 - (00:00:00.00)");
+    				}
+    				
+    			    database.cleanup();
+    			    
+    		    } catch (Exception e) {
+    				e.printStackTrace();
+    			}
+    	    }// if
+
+        	  }
+        	});
+        
         
         Button btn1 = (Button) findViewById(R.id.tab2button1); 
         
@@ -188,7 +429,7 @@ public class AgentDroid extends Activity {
         	}
         });
         
-        Button btn2 = (Button) findViewById(R.id.tab3button1);
+        Button btn2 = (Button) findViewById(R.id.tab4button1);
         
         btn2.setOnClickListener(new OnClickListener(){
 
@@ -197,15 +438,15 @@ public class AgentDroid extends Activity {
 				try {
 					DBOIDHelper database = new DBOIDHelper(getBaseContext());
 					
-					EditText edit = (EditText) findViewById(R.id.tab3editText1);
+					EditText edit = (EditText) findViewById(R.id.tab4editText1);
 				    String str  = edit.getText().toString();
 				    database.update("1.3.6.1.2.1.1.4.0", str);
 				   
-				    edit = (EditText) findViewById(R.id.tab3editText2);
+				    edit = (EditText) findViewById(R.id.tab4editText2);
 				    str  = edit.getText().toString();
 				    database.update("1.3.6.1.2.1.1.5.0", str);
 				    
-				    edit = (EditText) findViewById(R.id.tab3editText3);
+				    edit = (EditText) findViewById(R.id.tab4editText3);
 				    str  = edit.getText().toString();
 				    database.update("1.3.6.1.2.1.1.6.0", str);
 				    
@@ -275,7 +516,7 @@ public class AgentDroid extends Activity {
 		}
         
         toast1.show();
-        ObjIdent oid = null;
+        
         DBOIDHelper database = new DBOIDHelper(getBaseContext());
         ArrayList<ObjIdent> objIdens = database.getAll();
         
@@ -284,99 +525,7 @@ public class AgentDroid extends Activity {
 			System.out.println(objIdent.getName() + " => " + objIdent.getValue() );  
 		}
         
-        TextView txtChanged = (TextView) findViewById(R.id.tab3textView11);
         
-		oid = database.getOID("1.3.6.1.2.1.1.1.0");
-		if(oid != null){
-			txtChanged.setText(oid.getValue());
-		}
-		
-		oid = database.getOID("1.3.6.1.2.1.1.2.0");
-		txtChanged = (TextView) findViewById(R.id.tab3textView21);
-		if(oid != null){
-			txtChanged.setText(oid.getValue());
-		}
-		//  getOID("1.3.6.1.2.1.1.3.0")
-	    try {
-	    	Date date = new Date(SystemClock.uptimeMillis());
-		    DateFormat formatter = new SimpleDateFormat("HH:mm:ss.SS");
-		    String dateFormatted = formatter.format(date);
-		    txtChanged = (TextView) findViewById(R.id.tab3textView31);
-		    txtChanged.setText(dateFormatted );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		    
-	    
-	    EditText editTextChanged;
-	    editTextChanged = (EditText) findViewById(R.id.tab3editText1);
-	    oid = database.getOID("1.3.6.1.2.1.1.4.0");
-	    if(oid != null){
-	    	editTextChanged.setText(oid.getValue());
-		}
-	    
-	    editTextChanged = (EditText) findViewById(R.id.tab3editText2);
-	    oid = database.getOID("1.3.6.1.2.1.1.5.0");
-	    if(oid != null){
-	    	editTextChanged.setText(oid.getValue());
-		}
-	    
-	    editTextChanged = (EditText) findViewById(R.id.tab3editText3);
-	    oid = database.getOID("1.3.6.1.2.1.1.6.0");
-	    if(oid != null){
-	    	editTextChanged.setText(oid.getValue());
-		}
-	    //  getOID("1.3.6.1.2.1.1.7.0")
-	    oid = database.getOID("1.3.6.1.2.1.1.7.0");
-	    int entero=0;
-	    String bin = "";
-	    if(oid != null){
-	    	entero = Integer.parseInt(oid.getValue());
-		}
-	    while(entero > 0){
-	    	bin += "" + (entero % 2); 
-	    	entero = entero / 2 ;
-	    }
-	    
-	    int tam = bin.length();
-	    CheckBox cb = null;
-	    
-	    cb = (CheckBox) findViewById(R.id.checkBox1);
-	    if (tam >= 1 && bin.charAt(0) == '1' )
-	    	cb.setChecked(true);
-	    else
-	    	cb.setChecked(false);
-	    	
-	    
-	    cb = (CheckBox) findViewById(R.id.checkBox2);
-	    if (tam >= 2 && bin.charAt(1) == '1' )
-	    	cb.setChecked(true);
-	    else
-	    	cb.setChecked(false);
-	    	
-	    
-	    cb = (CheckBox) findViewById(R.id.checkBox3);
-	    if (tam >= 3 && bin.charAt(2) == '1' )
-	    	cb.setChecked(true);
-	    else
-	    	cb.setChecked(false);
-	    	
-	    
-	    cb = (CheckBox) findViewById(R.id.checkBox4);
-	    if (tam >= 4 && bin.charAt(3) == '1' )
-	    	cb.setChecked(true);
-	    else
-	    	cb.setChecked(false);
-	    	
-	    
-	    cb = (CheckBox) findViewById(R.id.checkBox5);
-	    if (tam >= 7 && bin.charAt(6) == '1' )
-	    	cb.setChecked(true);
-	    else
-	    	cb.setChecked(false);
-	    	
-	    
-	    database.cleanup();
-
 		
 		
 	    /* a init(); se le agrego' el @SuppressLint("NewApi") 
@@ -396,15 +545,47 @@ public class AgentDroid extends Activity {
 	    	
 	    	ssrv.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 		    	@Override
+		    	
 		    	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		    		
 		    		intService = new Intent(AgentDroid.this, AgentSNMP.class);
+		    		EditText comRO = (EditText) findViewById(R.id.EditComRO);
+            		EditText comRW = (EditText) findViewById(R.id.EditComRW);
+            		EditText port = (EditText) findViewById(R.id.EditPort);
+            		RadioButton snmp1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+            		boolean version1 = snmp1.isChecked();
+            		String str = "";
+            		
+            		int portSNMP = Integer.parseInt(port.getText().toString());
+            		
 		    		if(isChecked){
-	    				startService(intService);
-	    				bindService(intService, myConnection, Context.BIND_AUTO_CREATE);
-	    				isBound = true;
-
+		    			if(portSNMP > 1024 && portSNMP < 65536){
+		    				startService(intService);
+		    				bindService(intService, myConnection, Context.BIND_AUTO_CREATE);
+		    				isBound = true;
+		    			
+		    				DBOIDHelper database = new DBOIDHelper(getBaseContext());
+		    					str = comRO.getText().toString();
+			    				database.update("CommunityReadOnly", str);
+			    				str = comRW.getText().toString();
+			    				database.update("CommunityReadWrite", str);
+			    				str = port.getText().toString();
+			    				database.update("portSNMP", str);
+			    				database.update("snmpVersionOne", (version1==true)?"true":"false");
+		    					database.update("1.3.6.1.2.1.1.3.0", ""+System.currentTimeMillis());			
+		    				database.cleanup();
+		    			}else{
+		    				buttonView.setChecked(false);
+		    				Builder builder = new Builder(AgentDroid.this);
+		    				builder.setTitle("Config Agent");
+	    					builder.setMessage("Incorrect Port Number. Must be greater than 1024 and less than 65535.");
+	    					builder.setNeutralButton("Ok", null);	
+		    				AlertDialog alertDia = builder.create();
+		    				alertDia.show();
+		    				alertDia.setCancelable(false);
+		    			}
 		    		}else{
-		    			if(isBound) {
+		    			if(isBound){
 		    				unbindService(myConnection);
 		    				stopService(intService);  
 		    				isBound = false;
@@ -425,12 +606,43 @@ public class AgentDroid extends Activity {
 	    	tgBtt.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 	    		@Override
 	    		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+	    			
 	    			intService = new Intent(AgentDroid.this, AgentSNMP.class);
-		    		if(isChecked){
-	    				startService(intService);
-	    				bindService(intService, myConnection, Context.BIND_AUTO_CREATE);
-	    				isBound = true;
-
+	    			EditText comRO = (EditText) findViewById(R.id.EditComRO);
+            		EditText comRW = (EditText) findViewById(R.id.EditComRW);
+            		EditText port = (EditText) findViewById(R.id.EditPort);
+            		RadioButton snmp1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+            		boolean version1 = snmp1.isChecked();
+            		String str = "";
+            		
+            		int portSNMP = Integer.parseInt(port.getText().toString());
+            		
+	    			if(isChecked){
+	    				if(portSNMP > 1024 && portSNMP < 65536){
+		    				startService(intService);
+		    				bindService(intService, myConnection, Context.BIND_AUTO_CREATE);
+		    				isBound = true;
+		    			
+		    				DBOIDHelper database = new DBOIDHelper(getBaseContext());
+		    					str = comRO.getText().toString();
+			    				database.update("CommunityReadOnly", str);
+			    				str = comRW.getText().toString();
+			    				database.update("CommunityReadWrite", str);
+			    				str = port.getText().toString();
+			    				database.update("portSNMP", str);
+			    				database.update("snmpVersionOne", (version1==true)?"true":"false");
+		    					database.update("1.3.6.1.2.1.1.3.0", ""+System.currentTimeMillis());			
+		    				database.cleanup();
+		    			}else{
+		    				buttonView.setChecked(false);
+		    				Builder builder = new Builder(AgentDroid.this);
+		    				builder.setTitle("Config Agent");
+	    					builder.setMessage("Incorrect Port Number. Must be greater than 1024 and less than 65535.");
+	    					builder.setNeutralButton("Ok", null);	
+		    				AlertDialog alertDia = builder.create();
+		    				alertDia.show();
+		    				alertDia.setCancelable(false);
+		    			}
 		    		}else{
 		    			if(isBound) {
 		    				unbindService(myConnection);
@@ -444,7 +656,34 @@ public class AgentDroid extends Activity {
 	    	  
 	    } // if (Build.VERSION.SDK_INT >= 14)
 	    
-
+	    EditText editTextChanged;
+	    editTextChanged = (EditText) findViewById(R.id.EditComRO);
+	    ObjIdent oid = database.getOID("CommunityReadOnly");
+	    if(oid != null){
+	    	editTextChanged.setText(oid.getValue());
+		}
+	    editTextChanged = (EditText) findViewById(R.id.EditComRW);
+	    oid = database.getOID("CommunityReadWrite");
+	    if(oid != null){
+	    	editTextChanged.setText(oid.getValue());
+		}
+	    editTextChanged = (EditText) findViewById(R.id.EditPort);
+	    oid = database.getOID("portSNMP");
+	    if(oid != null){
+	    	editTextChanged.setText(oid.getValue());
+		}
+	    RadioButton radSNMPv1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+	    RadioButton radSNMPv2c = (RadioButton) findViewById(R.id.RadioSNMPv2c);
+	    oid = database.getOID("snmpVersionOne");
+	    if(oid != null){
+	    	if(oid.getValue().equalsIgnoreCase("true")){
+	    		radSNMPv1.setChecked(true);
+	    		radSNMPv2c.setChecked(false);
+	    	}else{
+	    		radSNMPv1.setChecked(false);
+	    		radSNMPv2c.setChecked(true);
+	    	}
+		}
 	    
 	} // init()
 
@@ -468,6 +707,9 @@ public class AgentDroid extends Activity {
 		return false;
 	}
 
+	public TabHost getTabHost(){
+		return this.tabHost;
+	}
 
 	public class SenderTrapBackground extends AsyncTask<String[], Void, Boolean> {
 
@@ -496,14 +738,13 @@ public class AgentDroid extends Activity {
 					genTrap = Integer.parseInt(gTrap.equalsIgnoreCase("")? "0":gTrap);
 					specTrap = Integer.parseInt(sTrap.equalsIgnoreCase("")? "0":sTrap);
 				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
 				if(genTrap == 5) 
 					genTrap+=1;
 				
-				SNMPTimeTicks timestamp = new SNMPTimeTicks(SystemClock.uptimeMillis());
+				SNMPTimeTicks timestamp = new SNMPTimeTicks(3*6000);
 				
 				trap = new SNMPv1TrapPDU( new SNMPObjectIdentifier(entrepriseOID), new SNMPIPAddress(ipAddr), genTrap, specTrap, timestamp);
 			    
@@ -527,7 +768,7 @@ public class AgentDroid extends Activity {
 		protected void onPostExecute(Boolean send){
 			
 			Builder builder = new Builder(AgentDroid.this);
-			System.out.println("Enviado: " + send);
+			
 			if(send){ 
 				builder.setTitle("Sender Traps v1");
 				builder.setMessage("SNMPv1Trap sent successfully");
