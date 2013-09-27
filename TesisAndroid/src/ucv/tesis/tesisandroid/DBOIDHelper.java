@@ -135,6 +135,26 @@ public class DBOIDHelper {
 				values.put("name", oid.getName() );
 				values.put("value", oid.getValue() );
 				db.insert(DB_TABLE, null, values);
+				oid.setName("CommunityReadOnly");
+				oid.setValue("public");
+				values.put("name", oid.getName() );
+				values.put("value", oid.getValue() );
+				db.insert(DB_TABLE, null, values);
+				oid.setName("CommunityReadWrite");
+				oid.setValue("public");
+				values.put("name", oid.getName() );
+				values.put("value", oid.getValue() );
+				db.insert(DB_TABLE, null, values);
+				oid.setName("portSNMP");
+				oid.setValue("1161");
+				values.put("name", oid.getName() );
+				values.put("value", oid.getValue() );
+				db.insert(DB_TABLE, null, values);
+				oid.setName("snmpVersionOne");
+				oid.setValue("true");
+				values.put("name", oid.getName() );
+				values.put("value", oid.getValue() );
+				db.insert(DB_TABLE, null, values);
 				/** ifAdminStatus **/
 				int nIf=0; // numero de interfaces
             	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
