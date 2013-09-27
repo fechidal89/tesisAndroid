@@ -225,15 +225,21 @@ public class Mibs implements SNMPRequestListener {
                     // got a get-request for our variable; send back a value - just a string
                     try
                     {
-                    	Date date = new Date(SystemClock.uptimeMillis());
-            		    DateFormat formatter = new SimpleDateFormat("HH:mm:ss.SS");
-            		    String dateFormatted = formatter.format(date);
-                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPOctetString(dateFormatted));
+                    	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
+                    	ObjIdent oid = database.getOID("1.3.6.1.2.1.1.3.0");
+                    	database.cleanup();
+            	    	Long timeInit = Long.valueOf(oid.getValue());
+            	    	Long timeNow = System.currentTimeMillis();
+            	    	Long date = null;
+            			if(timeInit > 0){
+            				date = timeNow - timeInit;
+            			}
+                    	SNMPVariablePair newPair = new SNMPVariablePair(new SNMPObjectIdentifier(snmpOID.toString()), new SNMPInteger(date));
                         responseList.addSNMPObject(newPair);
                     }
                     catch (SNMPBadValueException e)
                     {
-                        // won't happen...
+                        e.printStackTrace();
                     }
                 } 
                 continue;   
