@@ -1,6 +1,7 @@
 package ucv.tesis.tesisandroid;
 
 import snmp.SNMPv1AgentInterface;
+import ucv.tesis.tesisandroid.DBOIDHelper.ObjIdent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -21,12 +22,23 @@ public class AgentSNMP extends Service {
 	public void onCreate(){
 		try {
 			Context context  = getBaseContext();
-			this.MIB = new Mibs(context);
-			this.agent = new SNMPv1AgentInterface(1);
+			
+			DBOIDHelper database = new DBOIDHelper(getBaseContext());
+				ObjIdent oid = database.getOID("portSNMP");
+				int port = Integer.parseInt(oid.getValue());
+				oid = database.getOID("snmpVersionOne");
+				int version = (oid.getValue().equalsIgnoreCase("true"))?0:1;
+				oid = database.getOID("CommunityReadOnly");
+				String communityRO = oid.getValue();
+				oid = database.getOID("CommunityReadWrite");
+				String communityRW = oid.getValue();
+			database.cleanup();
+			
+			this.MIB = new Mibs(context, communityRO, communityRW);
+			this.agent = new SNMPv1AgentInterface(version, port);
 			this.agent.addRequestListener(MIB);
 			this.agent.startReceiving();
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}
