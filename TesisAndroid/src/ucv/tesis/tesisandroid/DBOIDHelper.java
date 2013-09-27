@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
+import android.os.SystemClock;
 
 public class DBOIDHelper {
 	
@@ -95,18 +96,24 @@ public class DBOIDHelper {
 	        			 Build.BOOTLOADER + ", " +
 	        			 Build.MANUFACTURER + ", " +
 	        			 Build.CPU_ABI ;
-				
+		        //SysDescr
 		        oid.setName("1.3.6.1.2.1.1.1.0");
 				oid.setValue(str);
 				values.put("name", oid.name);
 				values.put("value", oid.value);
 				db.insert(DB_TABLE, null, values);
+				//SysObjID
 				oid.setName("1.3.6.1.2.1.1.2.0");
 				oid.setValue("0.0");
 				values.put("name", oid.name);
 				values.put("value", oid.value);
 				db.insert(DB_TABLE, null, values);
-				//"1.3.6.1.2.1.1.3.0" es SysUpTime
+				//SysUpTime
+				oid.setName("1.3.6.1.2.1.1.3.0");
+				oid.setValue("1");
+				values.put("name", oid.name);
+				values.put("value", oid.value);
+				db.insert(DB_TABLE, null, values);
 				oid.setName("1.3.6.1.2.1.1.4.0");
 				oid.setValue("SysContact");
 				values.put("name", oid.name);
@@ -122,6 +129,7 @@ public class DBOIDHelper {
 				values.put("name", oid.getName() );
 				values.put("value", oid.getValue() );
 				db.insert(DB_TABLE, null, values);
+				//SysServices
 				oid.setName("1.3.6.1.2.1.1.7.0");
 				oid.setValue("72");
 				values.put("name", oid.getName() );
@@ -129,7 +137,7 @@ public class DBOIDHelper {
 				db.insert(DB_TABLE, null, values);
 				/** ifAdminStatus **/
 				int nIf=0; // numero de interfaces
-            	             	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
+            	String cmd="ls /sys/class/net/", line=""; // comando para listar las interfaces en el dispositivo.
 				Process p=null;
 				BufferedReader in2=null;
 				ArrayList<String> arrIf = new ArrayList<String>();
