@@ -589,6 +589,9 @@ public class AgentDroid extends Activity {
 		    				unbindService(myConnection);
 		    				stopService(intService);  
 		    				isBound = false;
+		    				DBOIDHelper database = new DBOIDHelper(getBaseContext());
+	    						database.update("1.3.6.1.2.1.1.3.0", "0");			
+	    					database.cleanup();
 		    			}
 		    		}
 		    	}
@@ -648,6 +651,9 @@ public class AgentDroid extends Activity {
 		    				unbindService(myConnection);
 		    				stopService(intService);  
 		    				isBound = false;
+		    				DBOIDHelper database = new DBOIDHelper(getBaseContext());
+		    					database.update("1.3.6.1.2.1.1.3.0", "0");			
+		    				database.cleanup();
 		    			}
 		    		}
 	    		}
