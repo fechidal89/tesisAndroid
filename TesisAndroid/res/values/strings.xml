@@ -14,7 +14,7 @@
     <string name="communityRW">Community Read-Write:</string>
     <string name="communityDefault">Public</string>
     <string name="port">Port:</string>
-    <string name="portDefault">161</string>
+    <string name="portDefault">1161</string>
     <string name="version">Version:</string>
     <string name="snmp1">SNMPv1</string>
     <string name="snmp2">SNMPv2c</string>
@@ -29,7 +29,7 @@
     
     
     
-    <!-- TAB 2 - Service Send Traps  -->
+    <!-- TAB 2 y 3 - Service Send Traps  -->
     <string name="dtsIpAddress">Destination IP Address:</string>
     <!-- 
     <string name="port">Port:</string> 
@@ -43,8 +43,12 @@
     <string name="trapType">Trap Type:</string>
     <string name="specificTrap">Specific Trap:</string>
     <string name="bTraps">Send Trap</string>
-    
-    
+    <string name="selectOpcion">Select an Option</string>
+    <string name="trapOID">Trap OID</string>
+    <string name="description">Description</string>
+    <string name="dataType">Data Type</string>
+    <string name="bInform">Send Inform</string>
+     
     
     <!-- TAB 3 - System Group  -->
     <string name="valueNull">null</string>
