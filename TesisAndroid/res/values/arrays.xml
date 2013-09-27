@@ -8,4 +8,24 @@
 	    <item>authenticationFailure</item>
 	    <item>enterpriseSpecific</item>
 	</string-array>
+	<string-array name="selectOpcionStrings">
+	    <item>Trap</item>
+	    <item>Inform</item>
+	</string-array>
+	<string-array name="typetrapsv2c">
+	    <item>cold Start</item>
+	    <item>warm Start</item>
+	    <item>linkDown</item>
+	    <item>linkUp</item>
+	    <item>authenticationFailure</item>
+	    <item>other</item>
+	</string-array>
+	<string-array name="datatype">
+	    <item>----</item>
+	    <item>Integer</item>
+	    <item>Octet String</item>
+	    <item>Object Identifier</item>
+	    <item>IpAddress</item>
+	    <item>TimeTicks</item>
+	</string-array>
 </resources>
