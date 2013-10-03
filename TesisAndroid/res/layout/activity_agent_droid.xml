@@ -213,34 +213,6 @@
 	         			    android:inputType="text"
 	         			    android:visibility="gone" />
 	         			
-	         			<TextView
-	                        android:id="@+id/tab2textView7"
-	                        android:layout_width="wrap_content"
-	                        android:layout_height="wrap_content"
-	                        android:text="@string/retries" />
-	                    <!-- Retries -->
-	         			<EditText
-	         			    android:id="@+id/tab2editText6"
-	         			    android:layout_width="match_parent"
-	         			    android:layout_height="wrap_content"
-	         			    android:ems="10"
-	         			    android:text="@string/retriesDefault"
-	         			    android:inputType="number" />
-	         			
-	         			<TextView
-	                        android:id="@+id/tab2textView8"
-	                        android:layout_width="wrap_content"
-	                        android:layout_height="wrap_content"
-	                        android:text="@string/timeOut" />
-	                    <!-- timeout -->
-	         			<EditText
-	         			    android:id="@+id/tab2editText7"
-	         			    android:layout_width="match_parent"
-	         			    android:layout_height="wrap_content"
-	         			    android:ems="10"
-	         			    android:text="@string/timeOutDefault"
-	         			    android:inputType="number" />
-	         			
 	         			<Button
 	                        android:id="@+id/tab2button1"
 	                        android:layout_width="wrap_content" 
@@ -384,38 +356,9 @@
 						    android:id="@+id/tab3ComboBoxDataType"
 						    android:layout_width="match_parent"
 						    android:layout_height="wrap_content"
-						    android:drawSelectorOnTop= "true"
-						     />
+						    android:drawSelectorOnTop= "true" />
 	         			
-	         			
-	         			<TextView
-	                        android:id="@+id/tab3textView7"
-	                        android:layout_width="wrap_content"
-	                        android:layout_height="wrap_content"
-	                        android:text="@string/retries" />
-	                    <!-- Retries -->
-	         			<EditText
-	         			    android:id="@+id/tab3editText6"
-	         			    android:layout_width="match_parent"
-	         			    android:layout_height="wrap_content"
-	         			    android:ems="10"
-	         			    android:text="@string/retriesDefault"
-	         			    android:inputType="number" />
-	         			
-	         			<TextView
-	                        android:id="@+id/tab3textView8"
-	                        android:layout_width="wrap_content"
-	                        android:layout_height="wrap_content"
-	                        android:text="@string/timeOut" />
-	                    <!-- timeout -->
-	         			<EditText
-	         			    android:id="@+id/tab3editText7"
-	         			    android:layout_width="match_parent"
-	         			    android:layout_height="wrap_content"
-	         			    android:ems="10"
-	         			    android:text="@string/timeOutDefault"
-	         			    android:inputType="number" />
-	         			
+	         				         			
 	         			<Button
 	                        android:id="@+id/tab3ButtonTrap"
 	                        android:layout_width="wrap_content" 
