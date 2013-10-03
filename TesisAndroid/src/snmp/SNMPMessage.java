@@ -321,4 +321,23 @@ public class SNMPMessage extends SNMPSequence
         return ((SNMPOctetString)communityName).toString();
     }
     
+    /**
+     * Fernand Hidalgo
+     * Get Version SNMPMessage
+     * @throws SNMPBadValueException 
+     */
+    public SNMPInteger getVersion() throws SNMPBadValueException
+    {
+            Vector contents = (Vector)(this.getValue());
+            Object ver = contents.elementAt(0);
+            
+            if (!(ver instanceof SNMPInteger))
+            {
+                throw new SNMPBadValueException("Wrong Version in message: expected SNMPInteger, have " + ver.getClass().toString());
+            }
+            
+            return (SNMPInteger) ver;
+    }
+    
+    
 }
