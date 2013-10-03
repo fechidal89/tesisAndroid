@@ -21,11 +21,10 @@
 	    <item>other</item>
 	</string-array>
 	<string-array name="datatype">
-	    <item>----</item>
-	    <item>Integer</item>
-	    <item>Octet String</item>
-	    <item>Object Identifier</item>
-	    <item>IpAddress</item>
-	    <item>TimeTicks</item>
+	    <item>SNMPInteger</item>
+	    <item>SNMPOctetString</item>
+	    <item>SNMPObjectIdentifier</item>
+	    <item>SNMPIPAddress</item>
+	    <item>SNMPTimeTicks</item>
 	</string-array>
 </resources>
