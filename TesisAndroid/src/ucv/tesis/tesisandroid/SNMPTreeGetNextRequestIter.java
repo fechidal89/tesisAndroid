@@ -17,8 +17,8 @@ public class SNMPTreeGetNextRequestIter<T> implements Iterator<SNMPTreeGetNextRe
 
 	        private ProcessStages doNext;
 	        private SNMPTreeGetNextRequest<T> next;
-	        private Iterator<SNMPTreeGetNextRequest<T>> childrenCurNodeIter;
-	        private Iterator<SNMPTreeGetNextRequest<T>> childrenSubNodeIter;
+	        private Iterator<SNMPTreeGetNextRequest<String>> childrenCurNodeIter;
+	        private Iterator<SNMPTreeGetNextRequest<String>> childrenSubNodeIter;
 
 	        @Override
 	        public boolean hasNext() {
@@ -31,7 +31,7 @@ public class SNMPTreeGetNextRequestIter<T> implements Iterator<SNMPTreeGetNextRe
 
 	                if (this.doNext == ProcessStages.ProcessChildCurNode) {
 	                        if (childrenCurNodeIter.hasNext()) {
-	                        		SNMPTreeGetNextRequest<T> childDirect = childrenCurNodeIter.next();
+	                        		SNMPTreeGetNextRequest<String> childDirect = childrenCurNodeIter.next();
 	                                childrenSubNodeIter = childDirect.iterator();
 	                                this.doNext = ProcessStages.ProcessChildSubNode;
 	                                return hasNext();
@@ -45,7 +45,7 @@ public class SNMPTreeGetNextRequestIter<T> implements Iterator<SNMPTreeGetNextRe
 	                
 	                if (this.doNext == ProcessStages.ProcessChildSubNode) {
 	                        if (childrenSubNodeIter.hasNext()) {
-	                                this.next = childrenSubNodeIter.next();
+	                                this.next = (SNMPTreeGetNextRequest<T>) childrenSubNodeIter.next();
 	                                return true;
 	                        }
 	                        else {
