@@ -9,7 +9,10 @@ package ucv.tesis.tesisandroid;
 
 public final class R {
     public static final class array {
+        public static final int datatype=0x7f040003;
+        public static final int selectOpcionStrings=0x7f040001;
         public static final int typetraps=0x7f040000;
+        public static final int typetrapsv2c=0x7f040002;
     }
     public static final class attr {
     }
@@ -27,79 +30,96 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f090048;
-        public static final int checkBox1=0x7f090038;
-        public static final int checkBox2=0x7f09003b;
-        public static final int checkBox3=0x7f09003e;
-        public static final int checkBox4=0x7f090041;
-        public static final int checkBox5=0x7f090044;
-        public static final int editText1=0x7f090004;
-        public static final int editText12=0x7f090006;
-        public static final int editText2=0x7f090008;
+        public static final int EditComRO=0x7f090004;
+        public static final int EditComRW=0x7f090006;
+        public static final int EditPort=0x7f090008;
+        public static final int RadioSNMPv1=0x7f09000b;
+        public static final int RadioSNMPv2c=0x7f09000c;
+        public static final int TextComRO=0x7f090003;
+        public static final int TextComRW=0x7f090005;
+        public static final int TextPort=0x7f090007;
+        public static final int TextVersion=0x7f090009;
+        public static final int action_settings=0x7f090059;
+        public static final int checkBox1=0x7f090049;
+        public static final int checkBox2=0x7f09004c;
+        public static final int checkBox3=0x7f09004f;
+        public static final int checkBox4=0x7f090052;
+        public static final int checkBox5=0x7f090055;
         public static final int layoutForScroll1=0x7f090002;
         public static final int layoutForScroll2=0x7f09000e;
-        public static final int layoutForScroll3=0x7f090021;
-        public static final int radio0=0x7f09000b;
-        public static final int radio1=0x7f09000c;
+        public static final int layoutForScroll3=0x7f09001d;
+        public static final int layoutForScroll4=0x7f090032;
         public static final int radioGroup1=0x7f09000a;
-        public static final int switchService=0x7f090047;
+        public static final int switchService=0x7f090058;
         public static final int tab1=0x7f090001;
         public static final int tab2=0x7f09000d;
         public static final int tab2Spinner1=0x7f090016;
         public static final int tab2TextView1=0x7f09000f;
         public static final int tab2TextView2=0x7f090011;
-        public static final int tab2button1=0x7f09001f;
+        public static final int tab2button1=0x7f09001b;
         public static final int tab2editText1=0x7f090010;
         public static final int tab2editText2=0x7f090012;
         public static final int tab2editText3=0x7f090014;
         public static final int tab2editText4=0x7f09001a;
         public static final int tab2editText5=0x7f090018;
-        public static final int tab2editText6=0x7f09001c;
-        public static final int tab2editText7=0x7f09001e;
         public static final int tab2textView3=0x7f090013;
         public static final int tab2textView4=0x7f090015;
         public static final int tab2textView5=0x7f090019;
         public static final int tab2textView6=0x7f090017;
-        public static final int tab2textView7=0x7f09001b;
-        public static final int tab2textView8=0x7f09001d;
-        public static final int tab3=0x7f090020;
-        public static final int tab3button1=0x7f090045;
-        public static final int tab3editText1=0x7f09002f;
-        public static final int tab3editText2=0x7f090032;
-        public static final int tab3editText3=0x7f090035;
-        public static final int tab3textView0=0x7f090022;
-        public static final int tab3textView1=0x7f090025;
-        public static final int tab3textView11=0x7f090026;
-        public static final int tab3textView2=0x7f090028;
-        public static final int tab3textView21=0x7f090029;
-        public static final int tab3textView3=0x7f09002b;
-        public static final int tab3textView31=0x7f09002c;
-        public static final int tab3textView4=0x7f09002e;
-        public static final int tab3textView5=0x7f090031;
-        public static final int tab3textView6=0x7f090034;
-        public static final int tab3textView7=0x7f090037;
-        public static final int tab3textView71=0x7f09003a;
-        public static final int tab3textView72=0x7f09003d;
-        public static final int tab3textView73=0x7f090040;
-        public static final int tab3textView74=0x7f090043;
+        public static final int tab3=0x7f09001c;
+        public static final int tab3ButtonTrap=0x7f090030;
+        public static final int tab3ComboBoxCommand=0x7f090025;
+        public static final int tab3ComboBoxDataType=0x7f09002f;
+        public static final int tab3ComboBoxTrapType=0x7f090027;
+        public static final int tab3EditCommunity=0x7f090023;
+        public static final int tab3EditDescription=0x7f09002d;
+        public static final int tab3EditEnterpriseOID=0x7f090029;
+        public static final int tab3EditIp=0x7f09001f;
+        public static final int tab3EditPort=0x7f090021;
+        public static final int tab3EditTrapOID=0x7f09002b;
+        public static final int tab3TextCommunity=0x7f090022;
+        public static final int tab3TextDataType=0x7f09002e;
+        public static final int tab3TextDescription=0x7f09002c;
+        public static final int tab3TextEnterprise=0x7f090028;
+        public static final int tab3TextIp=0x7f09001e;
+        public static final int tab3TextOption=0x7f090024;
+        public static final int tab3TextPort=0x7f090020;
+        public static final int tab3TextTrapOID=0x7f09002a;
+        public static final int tab3TextTrapType=0x7f090026;
+        public static final int tab4=0x7f090031;
+        public static final int tab4button1=0x7f090056;
+        public static final int tab4editText1=0x7f090040;
+        public static final int tab4editText2=0x7f090043;
+        public static final int tab4editText3=0x7f090046;
+        public static final int tab4textView0=0x7f090033;
+        public static final int tab4textView1=0x7f090036;
+        public static final int tab4textView11=0x7f090037;
+        public static final int tab4textView2=0x7f090039;
+        public static final int tab4textView21=0x7f09003a;
+        public static final int tab4textView3=0x7f09003c;
+        public static final int tab4textView31=0x7f09003d;
+        public static final int tab4textView4=0x7f09003f;
+        public static final int tab4textView5=0x7f090042;
+        public static final int tab4textView6=0x7f090045;
+        public static final int tab4textView7=0x7f090048;
+        public static final int tab4textView71=0x7f09004b;
+        public static final int tab4textView72=0x7f09004e;
+        public static final int tab4textView73=0x7f090051;
+        public static final int tab4textView74=0x7f090054;
         public static final int tabhost=0x7f090000;
-        public static final int table0=0x7f090023;
-        public static final int table0Row1=0x7f090024;
-        public static final int table0Row10=0x7f09003f;
-        public static final int table0Row11=0x7f090042;
-        public static final int table0Row2=0x7f090027;
-        public static final int table0Row3=0x7f09002a;
-        public static final int table0Row4=0x7f09002d;
-        public static final int table0Row5=0x7f090030;
-        public static final int table0Row6=0x7f090033;
-        public static final int table0Row7=0x7f090036;
-        public static final int table0Row8=0x7f090039;
-        public static final int table0Row9=0x7f09003c;
-        public static final int textView1=0x7f090003;
-        public static final int textView12=0x7f090005;
-        public static final int textView2=0x7f090009;
-        public static final int textView3=0x7f090007;
-        public static final int toggleButton1=0x7f090046;
+        public static final int table0=0x7f090034;
+        public static final int table0Row1=0x7f090035;
+        public static final int table0Row10=0x7f090050;
+        public static final int table0Row11=0x7f090053;
+        public static final int table0Row2=0x7f090038;
+        public static final int table0Row3=0x7f09003b;
+        public static final int table0Row4=0x7f09003e;
+        public static final int table0Row5=0x7f090041;
+        public static final int table0Row6=0x7f090044;
+        public static final int table0Row7=0x7f090047;
+        public static final int table0Row8=0x7f09004a;
+        public static final int table0Row9=0x7f09004d;
+        public static final int toggleButton1=0x7f090057;
     }
     public static final class layout {
         public static final int activity_agent_droid=0x7f030000;
@@ -111,8 +131,9 @@ public final class R {
     public static final class string {
         public static final int action_settings=0x7f060004;
         public static final int app_name=0x7f060000;
-        public static final int applications=0x7f060028;
-        public static final int bSave=0x7f060029;
+        public static final int applications=0x7f06002d;
+        public static final int bInform=0x7f06001f;
+        public static final int bSave=0x7f06002e;
         public static final int bTraps=0x7f06001a;
         public static final int community=0x7f060017;
         public static final int communityDefault=0x7f060007;
@@ -120,16 +141,18 @@ public final class R {
          */
         public static final int communityRO=0x7f060005;
         public static final int communityRW=0x7f060006;
-        public static final int datalink_subnetwork=0x7f060025;
-        /**  TAB 2 - Service Send Traps  
+        public static final int dataType=0x7f06001e;
+        public static final int datalink_subnetwork=0x7f06002a;
+        public static final int description=0x7f06001d;
+        /**  TAB 2 y 3 - Service Send Traps  
          */
         public static final int dtsIpAddress=0x7f060015;
-        public static final int end_to_end=0x7f060027;
+        public static final int end_to_end=0x7f06002c;
         public static final int enterpriseOID=0x7f060010;
         public static final int hello_world=0x7f060001;
-        public static final int internet=0x7f060026;
+        public static final int internet=0x7f06002b;
         public static final int menu_settings=0x7f060002;
-        public static final int physical=0x7f060024;
+        public static final int physical=0x7f060029;
         public static final int port=0x7f060008;
         public static final int portDefault=0x7f060009;
         /**  
@@ -139,32 +162,34 @@ public final class R {
         public static final int portDefaultTraps=0x7f060016;
         public static final int retries=0x7f060011;
         public static final int retriesDefault=0x7f060012;
+        public static final int selectOpcion=0x7f06001b;
         public static final int snmp1=0x7f06000b;
         public static final int snmp2=0x7f06000c;
         public static final int snmpServiceOff=0x7f06000f;
         public static final int snmpServiceOn=0x7f06000e;
         public static final int specificTrap=0x7f060019;
         public static final int switchService=0x7f06000d;
-        public static final int sysContact=0x7f060020;
-        public static final int sysDescr=0x7f06001d;
-        public static final int sysLocation=0x7f060022;
-        public static final int sysName=0x7f060021;
-        public static final int sysObjectID=0x7f06001e;
-        public static final int sysServices=0x7f060023;
-        public static final int sysUpTime=0x7f06001f;
-        public static final int systemGroup=0x7f06001c;
+        public static final int sysContact=0x7f060025;
+        public static final int sysDescr=0x7f060022;
+        public static final int sysLocation=0x7f060027;
+        public static final int sysName=0x7f060026;
+        public static final int sysObjectID=0x7f060023;
+        public static final int sysServices=0x7f060028;
+        public static final int sysUpTime=0x7f060024;
+        public static final int systemGroup=0x7f060021;
         public static final int timeOut=0x7f060013;
         public static final int timeOutDefault=0x7f060014;
         public static final int title_activity_main=0x7f060003;
+        public static final int trapOID=0x7f06001c;
         /**  
    	<string name="communityDefault">Public</string>
      
          */
         public static final int trapType=0x7f060018;
-        public static final int vacio=0x7f06002a;
+        public static final int vacio=0x7f06002f;
         /**  TAB 3 - System Group  
          */
-        public static final int valueNull=0x7f06001b;
+        public static final int valueNull=0x7f060020;
         public static final int version=0x7f06000a;
     }
     public static final class style {
