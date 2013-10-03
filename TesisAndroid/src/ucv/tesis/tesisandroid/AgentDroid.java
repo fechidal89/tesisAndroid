@@ -17,10 +17,16 @@ import java.util.Iterator;
 
 import snmp.SNMPBadValueException;
 import snmp.SNMPIPAddress;
+import snmp.SNMPInformRequestSenderInterface;
+import snmp.SNMPObject;
 import snmp.SNMPObjectIdentifier;
 import snmp.SNMPTimeTicks;
 import snmp.SNMPTrapSenderInterface;
+import snmp.SNMPVarBindList;
+import snmp.SNMPVariablePair;
 import snmp.SNMPv1TrapPDU;
+import snmp.SNMPv2InformRequestPDU;
+import snmp.SNMPv2TrapPDU;
 import ucv.tesis.tesisandroid.DBOIDHelper.ObjIdent;
 import ucv.tesis.tesisandroid.R;
 import ucv.tesis.tesisandroid.AgentSNMP.LocalBinder;
@@ -199,8 +205,8 @@ public class AgentDroid extends Activity {
         			b.setText(R.string.bTraps);
         			textTrapType.setVisibility(View.VISIBLE);
         			comboBoxTrapType.setVisibility(View.VISIBLE);
-        			tab3TextEnterprise.setVisibility(View.GONE);
-        			tab3EditEnterpriseOID.setVisibility(View.GONE);
+        			tab3TextEnterprise.setVisibility(View.VISIBLE);
+        			tab3EditEnterpriseOID.setVisibility(View.VISIBLE);
         			tab3TextTrapOID.setVisibility(View.GONE);
         			tab3EditTrapOID.setVisibility(View.GONE);
         			tab3TextDescription.setVisibility(View.GONE);
@@ -239,8 +245,8 @@ public class AgentDroid extends Activity {
         			tab3TextDataType.setVisibility(View.VISIBLE);
         			tab3ComboBoxDataType.setVisibility(View.VISIBLE);
         		}else{
-        			tab3TextEnterprise.setVisibility(View.GONE);
-        			tab3EditEnterpriseOID.setVisibility(View.GONE);
+        			tab3TextEnterprise.setVisibility(View.VISIBLE);
+        			tab3EditEnterpriseOID.setVisibility(View.VISIBLE);
         			tab3TextTrapOID.setVisibility(View.GONE);
         			tab3EditTrapOID.setVisibility(View.GONE);
         			tab3TextDescription.setVisibility(View.GONE);
@@ -362,10 +368,10 @@ public class AgentDroid extends Activity {
     		    	Long t = System.currentTimeMillis();
     		    	BigInteger timeNow = new BigInteger(t.toString());    		    	
     		    	
-    		    	if(timeInit.compareTo(BigInteger.ONE) == 1){
+    		    	if(timeInit.compareTo(BigInteger.ZERO) == 1){
     					
     					long milliseconds = timeNow.subtract(timeInit).longValue();
-    					
+    					long milliPrint = milliseconds;
 					    long seconds = milliseconds / 1000;
 					    milliseconds  %= 1000;
 					    long minutes = seconds / 60;
@@ -377,10 +383,10 @@ public class AgentDroid extends Activity {
 					    String m = ""+minutes;
 					    String s = ""+seconds;
 					    
-					    txtChanged.setText(((h.length()==1)?"0"+h:h)+":"+((m.length()==1)?"0"+m:m)+":"+((s.length()==1)?"0"+s:s)+"."+milliseconds);
+					    txtChanged.setText(milliPrint+" - "+((h.length()==1)?"0"+h:h)+":"+((m.length()==1)?"0"+m:m)+":"+((s.length()==1)?"0"+s:s)+"."+milliseconds);
     					
     				}else{
-    					txtChanged.setText("0 - (00:00:00.00)");
+    					txtChanged.setText("0 - 00:00:00.00");
     				}
     				
     			    database.cleanup();
@@ -394,7 +400,7 @@ public class AgentDroid extends Activity {
         	});
         
         
-        Button btn1 = (Button) findViewById(R.id.tab2button1); 
+        Button btn1 = (Button) findViewById(R.id.tab2button1); // trap v1
         
         btn1.setOnClickListener(new OnClickListener(){         
                                                                
@@ -423,13 +429,78 @@ public class AgentDroid extends Activity {
     			arr[3] = ""+genTrap;
     			arr[4] = specTrap;
     			
-    			SenderTrapBackground task = new SenderTrapBackground();
+    			SenderTrapv1Background task = new SenderTrapv1Background();
     			task.execute(arr);
 	
         	}
         });
         
-        Button btn2 = (Button) findViewById(R.id.tab4button1);
+        
+        /**
+         * 
+         * Boton de send trapv2c
+         * 
+         */
+        
+        Button sendTrapv2c = (Button) findViewById(R.id.tab3ButtonTrap); // trap v2c e inform
+        
+        sendTrapv2c.setOnClickListener(new OnClickListener(){         
+                                                               
+        	@Override                                          
+        	public void onClick(View v) { 
+        		
+        		String[] arr = new String[9];
+        		EditText edit = (EditText) findViewById(R.id.tab3EditIp);
+    		    String ipAddr  = edit.getText().toString();
+    		    
+    		    edit = (EditText) findViewById(R.id.tab3EditPort);
+    		    String port  = edit.getText().toString();
+    		    
+    		    edit = (EditText) findViewById(R.id.tab3EditCommunity);
+    		    String community  = edit.getText().toString();
+    		    
+    		    Spinner boxComand = (Spinner) findViewById(R.id.tab3ComboBoxCommand);
+    			String cmd = boxComand.getSelectedItem().toString();
+    			
+    			Spinner boxTrapType = (Spinner) findViewById(R.id.tab3ComboBoxTrapType);
+    			String trapType = boxTrapType.getSelectedItem().toString();
+    			
+    		    edit = (EditText) findViewById(R.id.tab3EditEnterpriseOID);
+    		    String entrepriseOID  = edit.getText().toString();
+    		    
+    		    edit = (EditText) findViewById(R.id.tab3EditTrapOID);
+    		    String trapOID  = edit.getText().toString();
+    		    
+    		    edit = (EditText) findViewById(R.id.tab3EditDescription);
+    		    String description  = edit.getText().toString();
+    		    
+    		    Spinner list = (Spinner) findViewById(R.id.tab3ComboBoxDataType);
+    			String dataType = list.getSelectedItem().toString();
+    			
+    				arr[0] = cmd;
+	    			arr[1] = ipAddr;
+	    			arr[2] = port;
+	    			arr[3] = community;
+	    			arr[4] = trapType;
+	    			arr[5] = entrepriseOID;
+	    			arr[6] = trapOID;
+	    			arr[7] = description;
+	    			arr[8] = dataType;
+    			
+	    		SenderTrapv2InformBackground task = new SenderTrapv2InformBackground();
+	    		System.out.println("Invocacion de execute...");
+    			task.execute(arr);
+	
+        	}
+        });
+        
+        
+        /**
+         * 
+         * Boton de 'Save'
+         * 
+         */
+        Button btn2 = (Button) findViewById(R.id.tab4button1); // save
         
         btn2.setOnClickListener(new OnClickListener(){
 
@@ -517,17 +588,7 @@ public class AgentDroid extends Activity {
         
         toast1.show();
         
-        DBOIDHelper database = new DBOIDHelper(getBaseContext());
-        ArrayList<ObjIdent> objIdens = database.getAll();
-        
-        for (Iterator<ObjIdent> iterator = objIdens.iterator(); iterator.hasNext();) {
-			ObjIdent objIdent = (ObjIdent) iterator.next();
-			System.out.println(objIdent.getName() + " => " + objIdent.getValue() );  
-		}
-        
-        
-		
-		
+       
 	    /* a init(); se le agrego' el @SuppressLint("NewApi") 
 	    porque para el me'todo setOnCheckedChangeListener 
 	    era necesario sacar el warning del API minimun 14 */
@@ -537,6 +598,17 @@ public class AgentDroid extends Activity {
 	    	Switch ssrv = (Switch) findViewById(R.id.switchService);
 	    	// saber si el servicio esta en ejecucion, con el nombre de la clase en ejecucion
 	    	if(isRunning( getBaseContext() , "ucv.tesis.tesisandroid.AgentSNMP")){
+	    		EditText editTextChanged;
+	    	    editTextChanged = (EditText) findViewById(R.id.EditComRO);
+	    	    editTextChanged.setEnabled(false);
+	    	    editTextChanged = (EditText) findViewById(R.id.EditComRW);
+	    	    editTextChanged.setEnabled(false);
+	    	    editTextChanged = (EditText) findViewById(R.id.EditPort);
+	    	    editTextChanged.setEnabled(false);
+	    	    RadioButton radSNMPv1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+	    	    radSNMPv1.setEnabled(false);
+	    	    RadioButton radSNMPv2c = (RadioButton) findViewById(R.id.RadioSNMPv2c);
+	    	    radSNMPv2c.setEnabled(false);
 	    		ssrv.setChecked(true);
 	    		bindService(new Intent(AgentDroid.this, AgentSNMP.class), myConnection, Context.BIND_AUTO_CREATE);
 	    	}else{
@@ -553,6 +625,7 @@ public class AgentDroid extends Activity {
             		EditText comRW = (EditText) findViewById(R.id.EditComRW);
             		EditText port = (EditText) findViewById(R.id.EditPort);
             		RadioButton snmp1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+            		RadioButton snmp2 = (RadioButton) findViewById(R.id.RadioSNMPv2c);
             		boolean version1 = snmp1.isChecked();
             		String str = "";
             		
@@ -574,6 +647,11 @@ public class AgentDroid extends Activity {
 			    				database.update("snmpVersionOne", (version1==true)?"true":"false");
 		    					database.update("1.3.6.1.2.1.1.3.0", ""+System.currentTimeMillis());			
 		    				database.cleanup();
+		    				comRO.setEnabled(false);
+		    				comRW.setEnabled(false);
+		    				port.setEnabled(false);
+		    				snmp1.setEnabled(false);
+		    				snmp2.setEnabled(false);
 		    			}else{
 		    				buttonView.setChecked(false);
 		    				Builder builder = new Builder(AgentDroid.this);
@@ -592,6 +670,11 @@ public class AgentDroid extends Activity {
 		    				DBOIDHelper database = new DBOIDHelper(getBaseContext());
 	    						database.update("1.3.6.1.2.1.1.3.0", "0");			
 	    					database.cleanup();
+		    				comRO.setEnabled(true);
+		    				comRW.setEnabled(true);
+		    				port.setEnabled(true);
+		    				snmp1.setEnabled(true);
+		    				snmp2.setEnabled(true);
 		    			}
 		    		}
 		    	}
@@ -602,10 +685,22 @@ public class AgentDroid extends Activity {
 	    	ToggleButton tgBtt = (ToggleButton) findViewById(R.id.toggleButton1);
 	    	if(isRunning( getBaseContext() , "ucv.tesis.tesisandroid.AgentSNMP")){
 	    		tgBtt.setChecked(true);
+	    		EditText editTextChanged;
+	    	    editTextChanged = (EditText) findViewById(R.id.EditComRO);
+	    	    editTextChanged.setEnabled(false);
+	    	    editTextChanged = (EditText) findViewById(R.id.EditComRW);
+	    	    editTextChanged.setEnabled(false);
+	    	    editTextChanged = (EditText) findViewById(R.id.EditPort);
+	    	    editTextChanged.setEnabled(false);
+	    	    RadioButton radSNMPv1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+	    	    radSNMPv1.setEnabled(false);
+	    	    RadioButton radSNMPv2c = (RadioButton) findViewById(R.id.RadioSNMPv2c);
+	    	    radSNMPv2c.setEnabled(false);
 	    		bindService(new Intent(AgentDroid.this, AgentSNMP.class), myConnection, Context.BIND_AUTO_CREATE);
 	    	}else{
 	    		tgBtt.setChecked(false);
 	    	}
+	    	
 	    	tgBtt.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 	    		@Override
 	    		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -615,6 +710,7 @@ public class AgentDroid extends Activity {
             		EditText comRW = (EditText) findViewById(R.id.EditComRW);
             		EditText port = (EditText) findViewById(R.id.EditPort);
             		RadioButton snmp1 = (RadioButton) findViewById(R.id.RadioSNMPv1);
+            		RadioButton snmp2 = (RadioButton) findViewById(R.id.RadioSNMPv2c);
             		boolean version1 = snmp1.isChecked();
             		String str = "";
             		
@@ -636,6 +732,11 @@ public class AgentDroid extends Activity {
 			    				database.update("snmpVersionOne", (version1==true)?"true":"false");
 		    					database.update("1.3.6.1.2.1.1.3.0", ""+System.currentTimeMillis());			
 		    				database.cleanup();
+		    				comRO.setEnabled(false);
+		    				comRW.setEnabled(false);
+		    				port.setEnabled(false);
+		    				snmp1.setEnabled(false);
+		    				snmp2.setEnabled(false);
 		    			}else{
 		    				buttonView.setChecked(false);
 		    				Builder builder = new Builder(AgentDroid.this);
@@ -654,6 +755,11 @@ public class AgentDroid extends Activity {
 		    				DBOIDHelper database = new DBOIDHelper(getBaseContext());
 		    					database.update("1.3.6.1.2.1.1.3.0", "0");			
 		    				database.cleanup();
+		    				comRO.setEnabled(true);
+		    				comRW.setEnabled(true);
+		    				port.setEnabled(true);
+		    				snmp1.setEnabled(true);
+		    				snmp2.setEnabled(true);
 		    			}
 		    		}
 	    		}
@@ -662,6 +768,9 @@ public class AgentDroid extends Activity {
 	    	  
 	    } // if (Build.VERSION.SDK_INT >= 14)
 	    
+	    
+	    DBOIDHelper database = new DBOIDHelper(getBaseContext());
+        
 	    EditText editTextChanged;
 	    editTextChanged = (EditText) findViewById(R.id.EditComRO);
 	    ObjIdent oid = database.getOID("CommunityReadOnly");
@@ -691,6 +800,9 @@ public class AgentDroid extends Activity {
 	    	}
 		}
 	    
+	    database.cleanup();
+	    
+	    
 	} // init()
 
 	
@@ -717,7 +829,7 @@ public class AgentDroid extends Activity {
 		return this.tabHost;
 	}
 
-	public class SenderTrapBackground extends AsyncTask<String[], Void, Boolean> {
+	public class SenderTrapv1Background extends AsyncTask<String[], Void, Boolean> {
 
 		
 		@Override
@@ -767,7 +879,7 @@ public class AgentDroid extends Activity {
 				e.printStackTrace();
 				send=false;
 			} 
-			System.out.println("Enviado: " + send);
+			
 			return send;
 		}
 		@Override
@@ -792,4 +904,141 @@ public class AgentDroid extends Activity {
 		
 	}
 	
+
+
+
+public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, String> {
+
+	
+	@Override
+	protected String doInBackground(String[]... arg0) {
+		
+		String send="true";
+		String type = "";
+				
+		try {
+			type = arg0[0][0]; 
+			String ipAddr = arg0[0][1];
+			String port = arg0[0][2];
+			String community = arg0[0][3];
+			String trapType = arg0[0][4];
+			String entrepriseOID = arg0[0][5];
+			String trapOID = arg0[0][6];
+			String description = arg0[0][7];
+			String dataType = arg0[0][8];
+			InetAddress hostAddress = null;
+			
+			System.out.println( ipAddr);
+			System.out.println( ipAddr);
+			System.out.println( port);
+			System.out.println( community );
+			System.out.println( trapType);
+			System.out.println( entrepriseOID );
+			System.out.println( trapOID );
+			System.out.println( description );
+			System.out.println( dataType );
+			
+			
+			int remotePort = Integer.parseInt(port);
+			hostAddress = InetAddress.getByName(ipAddr);
+			
+			DBOIDHelper database = new DBOIDHelper(AgentDroid.this);
+    			ObjIdent oid = database.getOID("1.3.6.1.2.1.1.3.0");
+    		database.cleanup();
+    		Long time = (long) 0;
+    		if(!oid.getValue().equalsIgnoreCase("0")){
+    			time = System.currentTimeMillis()-Long.valueOf(oid.getValue());
+    			System.out.println("TRAP TIME "+time);
+    		}
+			SNMPTimeTicks systemUpTime = new SNMPTimeTicks(time);
+			
+			if(type.equalsIgnoreCase("trap")){
+				
+				SNMPTrapSenderInterface SNMPSendTrapV2 = new SNMPTrapSenderInterface(remotePort);
+				
+				if(trapType.equalsIgnoreCase("other")){
+					SNMPObjectIdentifier itemID = new SNMPObjectIdentifier(trapOID);
+                    SNMPObject value;
+                    Class valueClass = Class.forName("snmp."+dataType);
+                    value = (SNMPObject)valueClass.newInstance();
+                    value.setValue(description);
+                    SNMPVarBindList varBindList = new SNMPVarBindList();
+                    varBindList.addSNMPObject(new SNMPVariablePair(itemID, value));
+                    SNMPv2TrapPDU trap =new SNMPv2TrapPDU(systemUpTime, new SNMPObjectIdentifier(entrepriseOID), varBindList);
+					SNMPSendTrapV2.sendTrap(1, hostAddress, community, trap);
+				}else{
+					SNMPv2TrapPDU trap = new SNMPv2TrapPDU( new SNMPObjectIdentifier(entrepriseOID), systemUpTime);
+					SNMPSendTrapV2.sendTrap(1, hostAddress, community, trap);
+				}
+				
+			}else if(type.equalsIgnoreCase("inform")){
+				
+				SNMPInformRequestSenderInterface informInterface = new SNMPInformRequestSenderInterface(remotePort);
+				
+				SNMPObjectIdentifier itemID = new SNMPObjectIdentifier(trapOID);
+                SNMPObject value;
+                Class valueClass = Class.forName("snmp."+dataType);
+                value = (SNMPObject)valueClass.newInstance();
+                value.setValue(description);
+                SNMPVarBindList varBindList = new SNMPVarBindList();
+                varBindList.addSNMPObject(new SNMPVariablePair(itemID, value));
+                SNMPv2InformRequestPDU pdu = new SNMPv2InformRequestPDU(systemUpTime, new SNMPObjectIdentifier(entrepriseOID), varBindList);
+			    
+                informInterface.sendInformRequest(hostAddress, community, pdu);
+				
+			}
+			
+		} catch (SocketException e) {
+			e.printStackTrace();
+			send="false";
+		} catch (IOException e) {
+			e.printStackTrace();
+			send="false";
+		} catch (SNMPBadValueException e) {
+			e.printStackTrace();
+			send="false";
+		} catch (ClassNotFoundException e) {
+			send="false";
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			send="false";
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			send="false";
+			e.printStackTrace();
+		}
+		
+		return send + " " + type;
+	}
+	@Override
+	protected void onPostExecute(String send){
+		
+		Builder builder = new Builder(AgentDroid.this);
+		
+		if(send.equalsIgnoreCase("true trap")){ 
+			builder.setTitle("Sender Traps v2c");
+			builder.setMessage("SNMPv1Trap sent successfully");
+			builder.setNeutralButton("Ok", null);	
+		}else if(send.equalsIgnoreCase("false trap")){
+			builder.setTitle("Sender Traps v2c");
+			builder.setMessage("SNMPv1Trap not sent ");
+			builder.setNeutralButton("Ok", null);	
+		}else if(send.equalsIgnoreCase("true inform")){ 
+			builder.setTitle("Sender Inform");
+			builder.setMessage("SNMPInformRequest sent successfully");
+			builder.setNeutralButton("Ok", null);	
+		}else if(send.equalsIgnoreCase("false inform")){
+			builder.setTitle("Sender Inform");
+			builder.setMessage("SNMPInformRequest not sent ");
+			builder.setNeutralButton("Ok", null);	
+		}
+		
+		AlertDialog alertDia = builder.create();
+		alertDia.show();
+		alertDia.setCancelable(false);
+	
+	}
+	
 }
+
+}//fin class AgentDroid
