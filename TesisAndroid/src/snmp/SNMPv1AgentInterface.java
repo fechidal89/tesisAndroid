@@ -233,7 +233,7 @@ public class SNMPv1AgentInterface
                 byte[] encodedMessage = inPacket.getData();
                 
                 
-                System.out.println("Message bytes length (in): " + inPacket.getLength());
+                /*System.out.println("Message bytes length (in): " + inPacket.getLength());
                 
                 System.out.println("Message bytes (in):");
                 for (int i = 0; i < encodedMessage.length; ++i)
@@ -241,9 +241,10 @@ public class SNMPv1AgentInterface
                     System.out.print(hexByte(encodedMessage[i]) + " ");
                 }
                 System.out.println("\n");
-                
+                */
                 
                 SNMPMessage receivedMessage = new SNMPMessage(SNMPBERCodec.extractNextTLV(encodedMessage,0).value);
+                
                 
                 SNMPPDU receivedPDU = null;
                 SNMPv2BulkRequestPDU receivedBulkPDU = null;
@@ -273,16 +274,20 @@ public class SNMPv1AgentInterface
                 int errorIndex = 0;
                 int errorStatus = SNMPRequestException.NO_ERROR;
                 
+                SNMPInteger myVersion = new SNMPInteger(this.version);
+                
                 
                 try
                 {
+                	if (!receivedMessage.getVersion().equals(myVersion)){
+                    	throw new Exception("Version Message bad!");
+                    }
                 
                     // pass the received PDU and community name to the processRequest method of any listeners;
                     // handle differently depending on whether the request is a get-next, or a get or set
                 
                     if ((requestPDUType == SNMPBERCodec.SNMPGETREQUEST) || (requestPDUType == SNMPBERCodec.SNMPSETREQUEST))
                     {
-                
                         // pass the received PDU and community name to any registered listeners
                         for (int i = 0; i < listenerVector.size(); i++)
                         {
@@ -354,7 +359,7 @@ public class SNMPv1AgentInterface
                                 SNMPSequence handledPair = (SNMPSequence)handledVarList.getSNMPObjectAt(j);
                                 SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)handledPair.getSNMPObjectAt(0);
                                 SNMPObject snmpObject = (SNMPObject)handledPair.getSNMPObjectAt(1);
-                                System.out.println("handledVarList: OID: " + snmpOID.toString()+" value: "+snmpObject.toString() );
+                                //System.out.println("handledVarList: OID: " + snmpOID.toString()+" value: "+snmpObject.toString() );
                                /*
                                 if (!variablePairHashtable.containsKey(snmpOID))
                                 {
@@ -413,7 +418,7 @@ public class SNMPv1AgentInterface
                                 SNMPSequence handledPair = (SNMPSequence)handledVarList.getSNMPObjectAt(j);
                                 SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)handledPair.getSNMPObjectAt(0);
                                 SNMPObject snmpObject = (SNMPObject)handledPair.getSNMPObjectAt(1);
-                                System.out.println("handledVarList: OID: " + snmpOID.toString()+" value: "+snmpObject.toString() );
+                                //System.out.println("handledVarList: OID: " + snmpOID.toString()+" value: "+snmpObject.toString() );
                                /*
                                 if (!variablePairHashtable.containsKey(snmpOID))
                                 {
