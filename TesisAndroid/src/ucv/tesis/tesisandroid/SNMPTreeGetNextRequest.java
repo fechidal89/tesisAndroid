@@ -12,22 +12,22 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
-public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextRequest<T>> {
+public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextRequest<String>> {
 
 	
-	    T data;
+		String data;
 	    boolean tableOrEntry;
-	    SNMPTreeGetNextRequest<T> parent;
-	    SNMPTreeGetNextRequest<T> nNext;
-	    List<SNMPTreeGetNextRequest<T>> children;
-	    private List<SNMPTreeGetNextRequest<T>> elementsIndex;
+	    SNMPTreeGetNextRequest<String> parent;
+	    SNMPTreeGetNextRequest<String> nNext;
+	    List<SNMPTreeGetNextRequest<String>> children;
+	    private List<SNMPTreeGetNextRequest<String>> elementsIndex;
 	    
-	    public SNMPTreeGetNextRequest(T data) {
+	    public SNMPTreeGetNextRequest(String data) {
 	        this.data = data;
 	        this.tableOrEntry = true;
-	        this.children = new LinkedList<SNMPTreeGetNextRequest<T>>();
+	        this.children = new LinkedList<SNMPTreeGetNextRequest<String>>();
 	    }
-	    public SNMPTreeGetNextRequest(SNMPTreeGetNextRequest<T> node) {
+	    public SNMPTreeGetNextRequest(SNMPTreeGetNextRequest<String> node) {
 	        this.data = node.data;
 	        this.tableOrEntry = node.tableOrEntry;
 	        this.parent = node.parent;
@@ -36,9 +36,9 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	        this.elementsIndex = node.elementsIndex;	        
 	    }
 
-	   /* public SNMPTreeGetNextRequest<T> addNode(T child) {
+	   /* public SNMPTreeGetNextRequest<String> addNode(String child) {
 	    	this.tableOrEntry = false;
-	    	SNMPTreeGetNextRequest<T> childNode = new SNMPTreeGetNextRequest<T>(child);
+	    	SNMPTreeGetNextRequest<String> childNode = new SNMPTreeGetNextRequest<String>(child);
 	        childNode.parent = this;
 	        childNode.nNext = null;
 	        if(this.children.size()>0)
@@ -47,10 +47,10 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	        return childNode;
 	    }*/
 	    
-	    public SNMPTreeGetNextRequest<T> addNode(T child, boolean TOrE) {
+	    public SNMPTreeGetNextRequest<String> addNode(String child, boolean TOrE) {
 	    	this.tableOrEntry = TOrE;
-	    	SNMPTreeGetNextRequest<T> childNode = new SNMPTreeGetNextRequest<T>(child);
-	        childNode.parent = this;
+	    	SNMPTreeGetNextRequest<String> childNode = new SNMPTreeGetNextRequest<String>(child);
+	        childNode.parent = (SNMPTreeGetNextRequest<String>) this;
 	        childNode.tableOrEntry = TOrE;
 	        childNode.nNext = null;
 	        if(this.children.size()>0)
@@ -59,17 +59,17 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	        return childNode;
 	    }
 	    
-	    public void addLeaf(T child) {
+	    public void addLeaf(String child) {
 	    	this.tableOrEntry = true;
-	    	SNMPTreeGetNextRequest<T> childNode = new SNMPTreeGetNextRequest<T>(child);
-	        childNode.parent = this;
+	    	SNMPTreeGetNextRequest<String> childNode = new SNMPTreeGetNextRequest<String>(child);
+	        childNode.parent = (SNMPTreeGetNextRequest<String>) this;
 	        //childNode.nNext = null;
 	        childNode.tableOrEntry = false;
 	        if(this.children.size()>0)
 	        	this.children.get(this.children.size()-1).nNext = childNode;
 	        /*
 	        if(this.nNext == null){
-	        	SNMPTreeGetNextRequest<T> node = this.parent;
+	        	SNMPTreeGetNextRequest<String> node = this.parent;
 	        	if(node != null){
 		        	while(node.nNext == null && node.parent != null){
 		        		node = node.parent;
@@ -99,72 +99,145 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
                     return parent.getLevel() + 1;
 	    }
 	
-	    private void registerChildForSearch(SNMPTreeGetNextRequest<T> node) {
+	    private void registerChildForSearch(SNMPTreeGetNextRequest<String> node) {
 	            elementsIndex.add(node);
 	            if (parent != null)
 	                    parent.registerChildForSearch(node);
 	    }
 	
-	    public SNMPTreeGetNextRequest<T> findTreeNode(Comparable<T> cmp) {
-	            for (SNMPTreeGetNextRequest<T> element : this.elementsIndex) {
-	                    T elData = element.data;
+	    public SNMPTreeGetNextRequest<String> findTreeNode(Comparable<String> cmp) {
+	            for (SNMPTreeGetNextRequest<String> element : this.elementsIndex) {
+	            		String elData = element.data;
 	                    if (cmp.compareTo(elData) == 0)
 	                            return element;
 	            }
 	            return null;
 	    }
 	
+	    public final SNMPTreeGetNextRequest<String> findBinSearch(String oid){
+	    	
+	    	List<SNMPTreeGetNextRequest<String>> L =  this.children;
+	    	int izq = 0;
+	    	int der = L.size()-1;
+	    	int center = (izq+der)/2;
+	    	//int level = 1;
+	    	
+	    	if(oid.equalsIgnoreCase(this.data)){
+	    		//System.out.println("Root!");
+	    		return (SNMPTreeGetNextRequest<String>) this;
+	    	}
+	    	
+	    	while(true){
+	    		izq = 0;
+	    		der = L.size()-1;
+		    	center = (izq+der)/2;
+		    	/*System.out.println("NUEVO NIVEL");
+		    	for (Iterator<SNMPTreeGetNextRequest<String>> iterator = L.iterator(); iterator.hasNext();) {
+					SNMPTreeGetNextRequest<String> snmpTreeGetNextRequest = (SNMPTreeGetNextRequest<String>) iterator.next();
+					System.out.println( snmpTreeGetNextRequest.data );
+				}
+		    	System.out.println("-----");
+		    	*/
+		    	while((izq<= der) && !(oid.contains(L.get(center).data))){
+		    		//System.out.println(L.get(center).data + " no esta en " + oid);
+		    		//System.out.println(compareOID(oid,L.get(center).data));
+	    			
+		    		if(compareOID(oid,L.get(center).data) < 0 ){
+		    			//System.out.println("Con "+L.get(center).data+" Move> izq");
+		    			der = center - 1;
+		    		}else{
+		    			//System.out.println("Con "+L.get(center).data+" Move> der");
+		    			izq = center + 1;
+		    		} 
+		    		
+		    		center = (izq+der)/2;
+		    	}
+		    	
+		    	if(izq>der)
+		    		return null;
+		    	else if(L.get(center).data.equalsIgnoreCase(oid)){
+		    		break;
+		    	}else{
+		    		L = L.get(center).children;
+		    		//level++;
+		    		//System.out.println("bajando al nivel = "+ level);
+		    	}
+	    	}
+	    	//System.out.println("Encontrado en el nivel => "+level);
+		    return  L.get(center);
+	    	
+	    }
+	    
+	    public final int compareOID(String principal, String segundario){
+	    	
+	    	principal = principal.replace(".", " ");
+	    	segundario = segundario.replace(".", " ");
+	    	String[] arrA = principal.split(" ");
+	    	String[] arrB = segundario.split(" ");
+	    	int tamMin = (arrA.length > arrB.length )? arrB.length : arrA.length;
+	    	if(tamMin > 15) tamMin = 15; // caso tcp y udp con las ips y puertos, solo hasta el puerto origen
+	    	int rest = 0;
+	    	for (int i = 0; i < tamMin; i++) {
+	    		rest += Integer.parseInt(arrA[i]) - Integer.parseInt(arrB[i]); 
+	    	}
+	    	
+	    	return rest;
+	    }
+	    
+	    
 	    public String GetNext(){
 	    	//System.out.println(this.data + " " + this.tableOrEntry);
 	    	if(this.tableOrEntry){
 	    		if(this.children != null && this.children.size() > 0){
-	    			SNMPTreeGetNextRequest<T> node = this.children.get(0);
-	    			//System.out.println(node.data);
+	    			SNMPTreeGetNextRequest<String> node = this.children.get(0);
+	    			
 	    			while(node.tableOrEntry){
 	    				if(node.children != null && node.children.size() > 0){
 	    	    			node = node.children.get(0);
 	    				}
 	    			}
-	    			return node.data.toString();
+	    			//System.out.println("mi next => "+ node.data);
+	    			return node.data;
 	    		}	    			
 	    	}else{
 	    		//System.out.println("por el else");
 	    		if(this.nNext != null){
-	    			SNMPTreeGetNextRequest<T> node = this.nNext;
+	    			SNMPTreeGetNextRequest<String> node = this.nNext;
 	    			while(node.tableOrEntry){
 	    				if(node.children != null && node.children.size() > 0){
 	    	    			node = node.children.get(0);
 	    				}else{ // no tiene hijos pero tiene siguiente caso de los Entry del Grupo At
 	    					if(node.nNext != null){
-	    						System.out.println(node.data.toString());
+	    						//System.out.println(node.data.toString());
 	    						node = node.nNext;
 	    					}
 	    				}
 	    			}
-	    			return node.data.toString();
+	    			return node.data;
 	    		}else{
 	    			//System.out.println("yo mismo");
-	    			return this.data.toString();
+	    			return this.data;
 	    		}
 	    	}
+			return (String)"";
 	    	
-	    	return "";
+	    	
 	    }
 	    
 	    
 	    @Override
 	    public String toString() {
-	            return data != null ? data.toString() : "[data null]";
+	            return data != null ? data : "[data null]";
 	    }
 	
 	    @Override
-	    public Iterator<SNMPTreeGetNextRequest<T>> iterator() {
-	    		SNMPTreeGetNextRequestIter<T> iter = new SNMPTreeGetNextRequestIter<T>(this);
+	    public Iterator<SNMPTreeGetNextRequest<String>> iterator() {
+	    		SNMPTreeGetNextRequestIter<String> iter = new SNMPTreeGetNextRequestIter<String>((SNMPTreeGetNextRequest<String>) this);
 	            return iter;
 	    }
 	    
 	    @SuppressLint("InlinedApi")
-		public static SNMPTreeGetNextRequest<String> SNMPTreeLoad(Context contAct )
+		public final static SNMPTreeGetNextRequest<String> SNMPTreeLoad(Context contAct )
 	    {
 	    	SNMPTreeGetNextRequest<String> root = new SNMPTreeGetNextRequest<String>("1.3.6.1.2.1");
 	    	{
@@ -172,19 +245,19 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		 * SYSTEM
 	    		 */	    		
 	    		SNMPTreeGetNextRequest<String> system = root.addNode("1.3.6.1.2.1.1", true);
-	    		system.addLeaf("1.3.6.1.2.1.1.1.0"); //sysDescr
-	    		system.addLeaf("1.3.6.1.2.1.1.2.0"); //sysObjectID
-	    		system.addLeaf("1.3.6.1.2.1.1.3.0"); //sysUpTime
-	    		system.addLeaf("1.3.6.1.2.1.1.4.0"); //sysContact
-	    		system.addLeaf("1.3.6.1.2.1.1.5.0"); //sysName
-	    		system.addLeaf("1.3.6.1.2.1.1.6.0"); //sysLocation
-	    		system.addLeaf("1.3.6.1.2.1.1.7.0"); //sysServices
+	    		system.addLeaf("1.3.6.1.2.1.1.1"); //sysDescr
+	    		system.addLeaf("1.3.6.1.2.1.1.2"); //sysObjectID
+	    		system.addLeaf("1.3.6.1.2.1.1.3"); //sysUpTime
+	    		system.addLeaf("1.3.6.1.2.1.1.4"); //sysContact
+	    		system.addLeaf("1.3.6.1.2.1.1.5"); //sysName
+	    		system.addLeaf("1.3.6.1.2.1.1.6"); //sysLocation
+	    		system.addLeaf("1.3.6.1.2.1.1.7"); //sysServices
 	    		
 	    		/**
 	    		 * INTERFACES
 	    		 */
 	    		SNMPTreeGetNextRequest<String> interfaces = root.addNode("1.3.6.1.2.1.2", true);
-	    		interfaces.addLeaf("1.3.6.1.2.1.2.1.0"); //ifNumber
+	    		interfaces.addLeaf("1.3.6.1.2.1.2.1"); //ifNumber
 	    		SNMPTreeGetNextRequest<String> iftable = interfaces.addNode("1.3.6.1.2.1.2.2", true); //ifTable
 	    		{
     				int nIf = 0; // numero de interface
@@ -333,27 +406,27 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		/**
 	    		 * IP
 	    		 */
-	    		SNMPTreeGetNextRequest<String> ip = root.addNode("1.3.6.1.2.1.4.0", true);
+	    		SNMPTreeGetNextRequest<String> ip = root.addNode("1.3.6.1.2.1.4", true);
 	    		{
-	    			ip.addLeaf("1.3.6.1.2.1.4.1.0");// ipForwarding
-	    			ip.addLeaf("1.3.6.1.2.1.4.2.0");// ipDefaultTTL
-					ip.addLeaf("1.3.6.1.2.1.4.3.0");// ipInReceives
-					ip.addLeaf("1.3.6.1.2.1.4.4.0");// ipInHdrErrors
-					ip.addLeaf("1.3.6.1.2.1.4.5.0");// ipInAddrErrors
-					ip.addLeaf("1.3.6.1.2.1.4.6.0");// ipForwDatagrams
-					ip.addLeaf("1.3.6.1.2.1.4.7.0");// ipInUnknownProtos
-					ip.addLeaf("1.3.6.1.2.1.4.8.0");// ipInDiscards
-					ip.addLeaf("1.3.6.1.2.1.4.9.0");// ipInDelivers
-					ip.addLeaf("1.3.6.1.2.1.4.10.0");// ipOutRequests
-					ip.addLeaf("1.3.6.1.2.1.4.11.0");// ipOutDiscards
-					ip.addLeaf("1.3.6.1.2.1.4.12.0");// ipOutNoRoutes
-					ip.addLeaf("1.3.6.1.2.1.4.13.0");// ipReasmTimeout
-					ip.addLeaf("1.3.6.1.2.1.4.14.0");// ipReasmReqds
-					ip.addLeaf("1.3.6.1.2.1.4.15.0");// ipReasmOKs
-					ip.addLeaf("1.3.6.1.2.1.4.16.0");// ipReasmFails
-					ip.addLeaf("1.3.6.1.2.1.4.17.0");// ipFragOKs
-					ip.addLeaf("1.3.6.1.2.1.4.18.0");// ipFragFails
-					ip.addLeaf("1.3.6.1.2.1.4.19.0");// ipFragCreates
+	    			ip.addLeaf("1.3.6.1.2.1.4.1");// ipForwarding
+	    			ip.addLeaf("1.3.6.1.2.1.4.2");// ipDefaultTTL
+					ip.addLeaf("1.3.6.1.2.1.4.3");// ipInReceives
+					ip.addLeaf("1.3.6.1.2.1.4.4");// ipInHdrErrors
+					ip.addLeaf("1.3.6.1.2.1.4.5");// ipInAddrErrors
+					ip.addLeaf("1.3.6.1.2.1.4.6");// ipForwDatagrams
+					ip.addLeaf("1.3.6.1.2.1.4.7");// ipInUnknownProtos
+					ip.addLeaf("1.3.6.1.2.1.4.8");// ipInDiscards
+					ip.addLeaf("1.3.6.1.2.1.4.9");// ipInDelivers
+					ip.addLeaf("1.3.6.1.2.1.4.10");// ipOutRequests
+					ip.addLeaf("1.3.6.1.2.1.4.11");// ipOutDiscards
+					ip.addLeaf("1.3.6.1.2.1.4.12");// ipOutNoRoutes
+					ip.addLeaf("1.3.6.1.2.1.4.13");// ipReasmTimeout
+					ip.addLeaf("1.3.6.1.2.1.4.14");// ipReasmReqds
+					ip.addLeaf("1.3.6.1.2.1.4.15");// ipReasmOKs
+					ip.addLeaf("1.3.6.1.2.1.4.16");// ipReasmFails
+					ip.addLeaf("1.3.6.1.2.1.4.17");// ipFragOKs
+					ip.addLeaf("1.3.6.1.2.1.4.18");// ipFragFails
+					ip.addLeaf("1.3.6.1.2.1.4.19");// ipFragCreates
 	    			
 					SNMPTreeGetNextRequest<String> ipAddrTable = ip.addNode("1.3.6.1.2.1.4.20", true); // ipAddrTable
 					
@@ -486,16 +559,16 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 								ipRouteMetric1.addLeaf("1.3.6.1.2.1.4.21.1.3."+str);
 							}
 			            	/**ipRouteNextHop*/
-			            	SNMPTreeGetNextRequest<String> ipRouteNextHop = ipRouteEntry.addNode("1.3.6.1.2.1.4.21.1.4", true);
+			            	SNMPTreeGetNextRequest<String> ipRouteNextHop = ipRouteEntry.addNode("1.3.6.1.2.1.4.21.1.7", true);
 			            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
 								String str = (String) iterator.next();
-								ipRouteNextHop.addLeaf("1.3.6.1.2.1.4.21.1.4."+str);
+								ipRouteNextHop.addLeaf("1.3.6.1.2.1.4.21.1.7."+str);
 							}
 			            	/**ipRouteMask*/
-			            	SNMPTreeGetNextRequest<String> ipRouteMask = ipRouteEntry.addNode("1.3.6.1.2.1.4.21.1.5", true);
+			            	SNMPTreeGetNextRequest<String> ipRouteMask = ipRouteEntry.addNode("1.3.6.1.2.1.4.21.1.11", true);
 			            	for (Iterator<String> iterator = table.iterator(); iterator.hasNext();) {
 								String str = (String) iterator.next();
-								ipRouteMask.addLeaf("1.3.6.1.2.1.4.21.1.5."+str);
+								ipRouteMask.addLeaf("1.3.6.1.2.1.4.21.1.11."+str);
 							}
 						}
 					}
@@ -572,7 +645,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 						
 					}
 					
-	    			ip.addLeaf("1.3.6.1.2.1.4.23.0");// ipRoutingDiscards
+	    			//ip.addLeaf("1.3.6.1.2.1.4.23");// ipRoutingDiscards no implementado por ser adicional y no encontrarse.
 	    			
 	    		} // ip
 	    		
@@ -581,32 +654,32 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		 */
 	    		SNMPTreeGetNextRequest<String> icmp = root.addNode("1.3.6.1.2.1.5", true);
 	    		{
-	    			icmp.addLeaf("1.3.6.1.2.1.5.1.0");// icmpInMsgs
-	    			icmp.addLeaf("1.3.6.1.2.1.5.2.0");// icmpInErrors
-					icmp.addLeaf("1.3.6.1.2.1.5.3.0");// icmpInDestUnreachs
-					icmp.addLeaf("1.3.6.1.2.1.5.4.0");// icmpInTimeExcds
-					icmp.addLeaf("1.3.6.1.2.1.5.5.0");// icmpInParmProbs
-					icmp.addLeaf("1.3.6.1.2.1.5.6.0");// icmpInSrcQuenchs
-					icmp.addLeaf("1.3.6.1.2.1.5.7.0");// icmpInRedirects
-					icmp.addLeaf("1.3.6.1.2.1.5.8.0");// icmpInEchos
-					icmp.addLeaf("1.3.6.1.2.1.5.9.0");// icmpInEchoReps
-					icmp.addLeaf("1.3.6.1.2.1.5.10.0");// icmpInTimestamps
-					icmp.addLeaf("1.3.6.1.2.1.5.11.0");// icmpInTimestampReps
-					icmp.addLeaf("1.3.6.1.2.1.5.12.0");// icmpInAddrMasks
-					icmp.addLeaf("1.3.6.1.2.1.5.13.0");// icmpInAddrMaskReps
-					icmp.addLeaf("1.3.6.1.2.1.5.14.0");// icmpOutMsgs
-					icmp.addLeaf("1.3.6.1.2.1.5.15.0");// icmpOutErrors
-					icmp.addLeaf("1.3.6.1.2.1.5.16.0");// icmpOutDestUnreachs
-					icmp.addLeaf("1.3.6.1.2.1.5.17.0");// icmpOutTimeExcds
-					icmp.addLeaf("1.3.6.1.2.1.5.18.0");// icmpOutParmProbs
-					icmp.addLeaf("1.3.6.1.2.1.5.19.0");// icmpOutSrcQuenchs
-					icmp.addLeaf("1.3.6.1.2.1.5.20.0");// icmpOutRedirects
-					icmp.addLeaf("1.3.6.1.2.1.5.21.0");// icmpOutEchos
-					icmp.addLeaf("1.3.6.1.2.1.5.22.0");// icmpOutEchoReps
-					icmp.addLeaf("1.3.6.1.2.1.5.23.0");// icmpOutTimestamps
-					icmp.addLeaf("1.3.6.1.2.1.5.24.0");// icmpOutTimestampReps
-					icmp.addLeaf("1.3.6.1.2.1.5.25.0");// icmpOutAddrMasks
-					icmp.addLeaf("1.3.6.1.2.1.5.26.0");// icmpOutAddrMaskReps
+	    			icmp.addLeaf("1.3.6.1.2.1.5.1");// icmpInMsgs
+	    			icmp.addLeaf("1.3.6.1.2.1.5.2");// icmpInErrors
+					icmp.addLeaf("1.3.6.1.2.1.5.3");// icmpInDestUnreachs
+					icmp.addLeaf("1.3.6.1.2.1.5.4");// icmpInTimeExcds
+					icmp.addLeaf("1.3.6.1.2.1.5.5");// icmpInParmProbs
+					icmp.addLeaf("1.3.6.1.2.1.5.6");// icmpInSrcQuenchs
+					icmp.addLeaf("1.3.6.1.2.1.5.7");// icmpInRedirects
+					icmp.addLeaf("1.3.6.1.2.1.5.8");// icmpInEchos
+					icmp.addLeaf("1.3.6.1.2.1.5.9");// icmpInEchoReps
+					icmp.addLeaf("1.3.6.1.2.1.5.10");// icmpInTimestamps
+					icmp.addLeaf("1.3.6.1.2.1.5.11");// icmpInTimestampReps
+					icmp.addLeaf("1.3.6.1.2.1.5.12");// icmpInAddrMasks
+					icmp.addLeaf("1.3.6.1.2.1.5.13");// icmpInAddrMaskReps
+					icmp.addLeaf("1.3.6.1.2.1.5.14");// icmpOutMsgs
+					icmp.addLeaf("1.3.6.1.2.1.5.15");// icmpOutErrors
+					icmp.addLeaf("1.3.6.1.2.1.5.16");// icmpOutDestUnreachs
+					icmp.addLeaf("1.3.6.1.2.1.5.17");// icmpOutTimeExcds
+					icmp.addLeaf("1.3.6.1.2.1.5.18");// icmpOutParmProbs
+					icmp.addLeaf("1.3.6.1.2.1.5.19");// icmpOutSrcQuenchs
+					icmp.addLeaf("1.3.6.1.2.1.5.20");// icmpOutRedirects
+					icmp.addLeaf("1.3.6.1.2.1.5.21");// icmpOutEchos
+					icmp.addLeaf("1.3.6.1.2.1.5.22");// icmpOutEchoReps
+					icmp.addLeaf("1.3.6.1.2.1.5.23");// icmpOutTimestamps
+					icmp.addLeaf("1.3.6.1.2.1.5.24");// icmpOutTimestampReps
+					icmp.addLeaf("1.3.6.1.2.1.5.25");// icmpOutAddrMasks
+					icmp.addLeaf("1.3.6.1.2.1.5.26");// icmpOutAddrMaskReps
 	    		}
 	    	
 	    		/**
@@ -614,18 +687,18 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		 */
 	    		SNMPTreeGetNextRequest<String> tcp = root.addNode("1.3.6.1.2.1.6", true);
 	    		{
-	    			tcp.addLeaf("1.3.6.1.2.1.6.1.0");// tcpRtoAlgorithm
-	    			tcp.addLeaf("1.3.6.1.2.1.6.2.0");// tcpRtoMin
-	    			tcp.addLeaf("1.3.6.1.2.1.6.3.0");// tcpRtoMax
-	    			tcp.addLeaf("1.3.6.1.2.1.6.4.0");// tcpMaxConn
-					tcp.addLeaf("1.3.6.1.2.1.6.5.0");// tcpActiveOpens
-	    			tcp.addLeaf("1.3.6.1.2.1.6.6.0");// tcpPassiveOpens
-					tcp.addLeaf("1.3.6.1.2.1.6.7.0");// tcpAttemptFails
-	    			tcp.addLeaf("1.3.6.1.2.1.6.8.0");// tcpEstabResets
-	    			tcp.addLeaf("1.3.6.1.2.1.6.9.0");// tcpCurrEstab
-	    			tcp.addLeaf("1.3.6.1.2.1.6.10.0");// tcpInSegs
-	    			tcp.addLeaf("1.3.6.1.2.1.6.11.0");// tcpOutSegs
-	    			tcp.addLeaf("1.3.6.1.2.1.6.12.0");// tcpRetransSegs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.1");// tcpRtoAlgorithm
+	    			tcp.addLeaf("1.3.6.1.2.1.6.2");// tcpRtoMin
+	    			tcp.addLeaf("1.3.6.1.2.1.6.3");// tcpRtoMax
+	    			tcp.addLeaf("1.3.6.1.2.1.6.4");// tcpMaxConn
+					tcp.addLeaf("1.3.6.1.2.1.6.5");// tcpActiveOpens
+	    			tcp.addLeaf("1.3.6.1.2.1.6.6");// tcpPassiveOpens
+					tcp.addLeaf("1.3.6.1.2.1.6.7");// tcpAttemptFails
+	    			tcp.addLeaf("1.3.6.1.2.1.6.8");// tcpEstabResets
+	    			tcp.addLeaf("1.3.6.1.2.1.6.9");// tcpCurrEstab
+	    			tcp.addLeaf("1.3.6.1.2.1.6.10");// tcpInSegs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.11");// tcpOutSegs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.12");// tcpRetransSegs
 	    			
 	    			SNMPTreeGetNextRequest<String> tcpConnTable = tcp.addNode("1.3.6.1.2.1.6.13", true); // tcpConnTable
 	    			
@@ -762,8 +835,8 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    				
 	    			}
 	    			
-	    			tcp.addLeaf("1.3.6.1.2.1.6.14.0");// tcpInErrs
-	    			tcp.addLeaf("1.3.6.1.2.1.6.15.0");// tcpOutRsts
+	    			tcp.addLeaf("1.3.6.1.2.1.6.14");// tcpInErrs
+	    			tcp.addLeaf("1.3.6.1.2.1.6.15");// tcpOutRsts
 	    		}
 	    	
 	    		/**
@@ -771,10 +844,10 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		 */
 	    		SNMPTreeGetNextRequest<String> udp = root.addNode("1.3.6.1.2.1.7", true);
 	    		{
-	    			udp.addLeaf("1.3.6.1.2.1.7.1.0");// udpInDatagrams
-					udp.addLeaf("1.3.6.1.2.1.7.2.0");// udpNoPorts
-					udp.addLeaf("1.3.6.1.2.1.7.3.0");// udpInErrors
-					udp.addLeaf("1.3.6.1.2.1.7.4.0");// udpOutDatagrams
+	    			udp.addLeaf("1.3.6.1.2.1.7.1");// udpInDatagrams
+					udp.addLeaf("1.3.6.1.2.1.7.2");// udpNoPorts
+					udp.addLeaf("1.3.6.1.2.1.7.3");// udpInErrors
+					udp.addLeaf("1.3.6.1.2.1.7.4");// udpOutDatagrams
 					SNMPTreeGetNextRequest<String> udpTable = udp.addNode("1.3.6.1.2.1.7.5", true);// udpTable
 					
 					SNMPTreeGetNextRequest<String> udpEntry = udpTable.addNode("1.3.6.1.2.1.7.5.1", true);
@@ -954,7 +1027,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	                    }
                 	}
                 }
-                //.out.println(indent + node.data/* + " | " + node.tableOrEntry + " | " + node.nNext*/);                
+                //System.out.println(indent + node.data + " | " + node.tableOrEntry + " | " + node.nNext);                
 	    	}
 	    	
 	    	return root;	    	
