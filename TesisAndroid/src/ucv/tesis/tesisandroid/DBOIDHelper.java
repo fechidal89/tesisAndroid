@@ -110,7 +110,7 @@ public class DBOIDHelper {
 				db.insert(DB_TABLE, null, values);
 				//SysUpTime
 				oid.setName("1.3.6.1.2.1.1.3.0");
-				oid.setValue("1");
+				oid.setValue("0");
 				values.put("name", oid.name);
 				values.put("value", oid.value);
 				db.insert(DB_TABLE, null, values);
