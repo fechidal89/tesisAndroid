@@ -6,18 +6,10 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-
-
 
 import snmp.SNMPBadValueException;
 import snmp.SNMPIPAddress;
-import snmp.SNMPInformRequestSenderInterface;
+//import snmp.SNMPInformRequestSenderInterface;
 import snmp.SNMPObject;
 import snmp.SNMPObjectIdentifier;
 import snmp.SNMPTimeTicks;
@@ -25,7 +17,7 @@ import snmp.SNMPTrapSenderInterface;
 import snmp.SNMPVarBindList;
 import snmp.SNMPVariablePair;
 import snmp.SNMPv1TrapPDU;
-import snmp.SNMPv2InformRequestPDU;
+//import snmp.SNMPv2InformRequestPDU;
 import snmp.SNMPv2TrapPDU;
 import ucv.tesis.tesisandroid.DBOIDHelper.ObjIdent;
 import ucv.tesis.tesisandroid.R;
@@ -36,7 +28,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -149,7 +140,7 @@ public class AgentDroid extends Activity {
         Spinner comboBox = (Spinner) findViewById(R.id.tab2Spinner1);
         ArrayAdapter<?> adapterCombo =  ArrayAdapter.createFromResource(this, R.array.typetraps, 
         								android.R.layout.simple_spinner_item);
-        adapterCombo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterCombo.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
         comboBox.setAdapter(adapterCombo);
         comboBox.setOnItemSelectedListener(new OnItemSelectedListener(){
         	
@@ -168,7 +159,7 @@ public class AgentDroid extends Activity {
         	public void onNothingSelected(AdapterView<?> parentView){;}
         }); 
         
-        
+        /*
         Spinner tab3ComboBoxCommand = (Spinner) findViewById(R.id.tab3ComboBoxCommand);
         adapterCombo =  ArrayAdapter.createFromResource(this, R.array.selectOpcionStrings, 
         								android.R.layout.simple_spinner_item);
@@ -216,12 +207,12 @@ public class AgentDroid extends Activity {
         		}	        		
         	}
         	public void onNothingSelected(AdapterView<?> parentView){;}
-        });
+        });*/
         
         Spinner tab3ComboBoxTrapType = (Spinner) findViewById(R.id.tab3ComboBoxTrapType);
         adapterCombo =  ArrayAdapter.createFromResource(this, R.array.typetrapsv2c, 
         								android.R.layout.simple_spinner_item);
-        adapterCombo.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+        adapterCombo.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
         tab3ComboBoxTrapType.setAdapter(adapterCombo);
         tab3ComboBoxTrapType.setOnItemSelectedListener(new OnItemSelectedListener(){
         	
@@ -459,9 +450,10 @@ public class AgentDroid extends Activity {
     		    edit = (EditText) findViewById(R.id.tab3EditCommunity);
     		    String community  = edit.getText().toString();
     		    
+    		    /*
     		    Spinner boxComand = (Spinner) findViewById(R.id.tab3ComboBoxCommand);
     			String cmd = boxComand.getSelectedItem().toString();
-    			
+    			*/
     			Spinner boxTrapType = (Spinner) findViewById(R.id.tab3ComboBoxTrapType);
     			String trapType = boxTrapType.getSelectedItem().toString();
     			
@@ -477,7 +469,7 @@ public class AgentDroid extends Activity {
     		    Spinner list = (Spinner) findViewById(R.id.tab3ComboBoxDataType);
     			String dataType = list.getSelectedItem().toString();
     			
-    				arr[0] = cmd;
+    				arr[0] = "trap"; // se colocaría cmd pero inform no se implementa
 	    			arr[1] = ipAddr;
 	    			arr[2] = port;
 	    			arr[3] = community;
@@ -487,8 +479,8 @@ public class AgentDroid extends Activity {
 	    			arr[7] = description;
 	    			arr[8] = dataType;
     			
-	    		SenderTrapv2InformBackground task = new SenderTrapv2InformBackground();
-	    		System.out.println("Invocacion de execute...");
+	    		SenderTrapv2Background task = new SenderTrapv2Background();
+	    		
     			task.execute(arr);
 	
         	}
@@ -812,7 +804,7 @@ public class AgentDroid extends Activity {
 		{
 			for (RunningServiceInfo service : ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).getRunningServices(Integer.MAX_VALUE)) 
 			{
-				//System.out.println(service.service.getClassName());
+				
 				if (service.service.getClassName().equals(class_name))
 				{
 					return true;
@@ -907,7 +899,7 @@ public class AgentDroid extends Activity {
 
 
 
-public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, String> {
+public class SenderTrapv2Background extends AsyncTask<String[], Void, String> {
 
 	
 	@Override
@@ -928,16 +920,6 @@ public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, Stri
 			String dataType = arg0[0][8];
 			InetAddress hostAddress = null;
 			
-			System.out.println( ipAddr);
-			System.out.println( ipAddr);
-			System.out.println( port);
-			System.out.println( community );
-			System.out.println( trapType);
-			System.out.println( entrepriseOID );
-			System.out.println( trapOID );
-			System.out.println( description );
-			System.out.println( dataType );
-			
 			
 			int remotePort = Integer.parseInt(port);
 			hostAddress = InetAddress.getByName(ipAddr);
@@ -948,7 +930,7 @@ public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, Stri
     		Long time = (long) 0;
     		if(!oid.getValue().equalsIgnoreCase("0")){
     			time = System.currentTimeMillis()-Long.valueOf(oid.getValue());
-    			System.out.println("TRAP TIME "+time);
+    			
     		}
 			SNMPTimeTicks systemUpTime = new SNMPTimeTicks(time);
 			
@@ -971,7 +953,7 @@ public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, Stri
 					SNMPSendTrapV2.sendTrap(1, hostAddress, community, trap);
 				}
 				
-			}else if(type.equalsIgnoreCase("inform")){
+			}/*else if(type.equalsIgnoreCase("inform")){
 				
 				SNMPInformRequestSenderInterface informInterface = new SNMPInformRequestSenderInterface(remotePort);
 				
@@ -986,7 +968,7 @@ public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, Stri
 			    
                 informInterface.sendInformRequest(hostAddress, community, pdu);
 				
-			}
+			}*/
 			
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -1017,13 +999,13 @@ public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, Stri
 		
 		if(send.equalsIgnoreCase("true trap")){ 
 			builder.setTitle("Sender Traps v2c");
-			builder.setMessage("SNMPv1Trap sent successfully");
+			builder.setMessage("SNMPv2cTrap sent successfully");
 			builder.setNeutralButton("Ok", null);	
 		}else if(send.equalsIgnoreCase("false trap")){
 			builder.setTitle("Sender Traps v2c");
-			builder.setMessage("SNMPv1Trap not sent ");
+			builder.setMessage("SNMPv2cTrap not sent ");
 			builder.setNeutralButton("Ok", null);	
-		}else if(send.equalsIgnoreCase("true inform")){ 
+		}/*else if(send.equalsIgnoreCase("true inform")){ 
 			builder.setTitle("Sender Inform");
 			builder.setMessage("SNMPInformRequest sent successfully");
 			builder.setNeutralButton("Ok", null);	
@@ -1031,7 +1013,7 @@ public class SenderTrapv2InformBackground extends AsyncTask<String[], Void, Stri
 			builder.setTitle("Sender Inform");
 			builder.setMessage("SNMPInformRequest not sent ");
 			builder.setNeutralButton("Ok", null);	
-		}
+		}*/
 		
 		AlertDialog alertDia = builder.create();
 		alertDia.show();
