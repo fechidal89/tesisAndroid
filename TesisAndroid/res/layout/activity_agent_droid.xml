@@ -276,24 +276,25 @@
 	         			    android:text="@string/communityDefault"
 	         			    android:ems="10"
 	         			    android:inputType="text" />
-	         			
+	         			<!-- delete 
 	         			<TextView
 	                        android:id="@+id/tab3TextOption"
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/selectOpcion" />
-	         			<!-- select Opcion -->
+	         			 select Opcion 
 	         			<Spinner
 						    android:id="@+id/tab3ComboBoxCommand"
 						    android:layout_width="match_parent"
 						    android:layout_height="wrap_content"
 						    android:drawSelectorOnTop= "true" />
-	         			
+	         			-->
 	         			<TextView
 	                        android:id="@+id/tab3TextTrapType"
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/trapType" />
+	                        
 	         			<!-- traptype -->
 	         			<Spinner
 						    android:id="@+id/tab3ComboBoxTrapType"
