@@ -252,7 +252,7 @@ public class AgentDroid extends Activity {
         Spinner tab3ComboBoxDataType = (Spinner) findViewById(R.id.tab3ComboBoxDataType);
         adapterCombo =  ArrayAdapter.createFromResource(this, R.array.datatype, 
         								android.R.layout.simple_spinner_item);
-        adapterCombo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterCombo.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
         tab3ComboBoxDataType.setAdapter(adapterCombo);
         tab3ComboBoxDataType.setOnItemSelectedListener(new OnItemSelectedListener(){
         	
