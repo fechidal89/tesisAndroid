@@ -236,11 +236,11 @@ public class Mibs implements SNMPRequestListener {
             	
             if(snmpOID.toString().startsWith("1.3.6.1.2.1.1"))
             {	
-            		System.out.println("HOla estoy en system...");
+            		
             	/* sysDescr  DisplayString | Read-Only | Mandatory */
                 if (snmpOID.toString().equals("1.3.6.1.2.1.1.1.0") || snmpOID.toString().equals("1.3.6.1.2.1.1.1"))
                 {   
-                	System.out.println("Hola estoy en system... y soy 1.3.6.1.2.1.1.1");
+                	
                     try
                     {
                     	DBOIDHelper database = new DBOIDHelper(this.contextActivity);
@@ -5405,7 +5405,7 @@ public class Mibs implements SNMPRequestListener {
 	            	int nSW = 0, nTSW = l.size();
 	        	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
 	        	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
-	        			System.out.println(pInfo.packageName);
+	        			
 	        		}*/
 					
 					// Pregunto cual SW que esta solicitando
@@ -5443,7 +5443,7 @@ public class Mibs implements SNMPRequestListener {
 	            	int nSW = 0, nTSW = l.size();
 	        	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
 	        	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
-	        			System.out.println(++nSW + " " + pInfo.packageName);
+	        			
 	        		}*/
 					
 					// Pregunto cual SW que esta solicitando
@@ -5498,7 +5498,7 @@ public class Mibs implements SNMPRequestListener {
 	            	int nSW = 0, nTSW = l.size();
 	        	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
 	        	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
-	        			System.out.println(pInfo.packageName);
+	        			
 	        		}*/
 					
 					// Pregunto cual SW que esta solicitando
@@ -5538,7 +5538,7 @@ public class Mibs implements SNMPRequestListener {
 	            	int nSW = 0, nTSW = l.size();
 	        	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
 	        	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
-	        			System.out.println(pInfo.packageName);
+	        			
 	        		}*/
 					
 					// Pregunto cual SW que esta solicitando
@@ -5576,7 +5576,7 @@ public class Mibs implements SNMPRequestListener {
 	            	int nSW = 0, nTSW = l.size();
 	        	    /*for (Iterator<ApplicationInfo> iterator = l.iterator(); iterator.hasNext();) {
 	        	    	ApplicationInfo pInfo = (ApplicationInfo) iterator.next();
-	        			System.out.println(pInfo.packageName);
+	        			
 	        		}*/
 					
 					// Pregunto cual SW que esta solicitando
@@ -5645,14 +5645,14 @@ public class Mibs implements SNMPRequestListener {
             
         } // for
         
-        System.out.println("RESPUESTA DE GET:");
+        
         
         for (int i = 0; i < responseList.size(); i++)
         {
             SNMPSequence variablePair = (SNMPSequence)responseList.getSNMPObjectAt(i);
             SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)variablePair.getSNMPObjectAt(0);
             SNMPObject snmpValue = (SNMPObject)variablePair.getSNMPObjectAt(1);
-            System.out.println(snmpOID + " -> " + snmpValue);
+            
         }
         
 	    return responseList;
@@ -5678,26 +5678,26 @@ public class Mibs implements SNMPRequestListener {
             try {
             	SNMPTreeGetNextRequest<String> node = treeRoot.findBinSearch(snmpOID.toString());
             	if(node!=null){
-        	    	System.out.println("Node FOUND = " + node.data);
+        	    	
         	    	nextNode = node.GetNext();
-        	    	System.out.println("NextNode = " + nextNode);
+        	    	
         	    }else{
-        	    	System.out.println("Not Found");
+        	    	
             	}
 	            newPair = new SNMPVariablePair(new SNMPObjectIdentifier(nextNode), snmpValue);     		
 	            newList.addSNMPObject(newPair);
             } catch (Exception e) {
-				System.out.println("Not Found");
+				
 			}
 			
         }
-		System.out.println("PREFUNTANDO POR> ");
+		
 		for (int i = 0; i < newList.size(); i++)
         {
             SNMPSequence variablePair = (SNMPSequence)newList.getSNMPObjectAt(i);
             SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)variablePair.getSNMPObjectAt(0);
             SNMPObject snmpValue = (SNMPObject)variablePair.getSNMPObjectAt(1);
-            System.out.println(snmpOID + " -> " + snmpValue);
+            
         }
 		
 		
@@ -5707,9 +5707,9 @@ public class Mibs implements SNMPRequestListener {
         	v1PDU = new SNMPPDU(SNMPBERCodec.SNMPGETREQUEST, PDU.getRequestID(), 0, 0, newList);
         	respList = this.processRequest(v1PDU, communityName);
         } catch (SNMPSetException e) {
-			System.out.println("hola soy una exception");
+			
 		} catch (SNMPBadValueException e) {
-			System.out.println("hola SNMPBadValueException");
+			
 		}
 
         if(respList.size() == 0){
@@ -5721,7 +5721,7 @@ public class Mibs implements SNMPRequestListener {
             SNMPSequence variablePair = (SNMPSequence)respList.getSNMPObjectAt(i);
             SNMPObjectIdentifier snmpOID = (SNMPObjectIdentifier)variablePair.getSNMPObjectAt(0);
             SNMPObject snmpValue = (SNMPObject)variablePair.getSNMPObjectAt(1);
-            System.out.println(snmpOID + " -> " + snmpValue);
+            
         }
         
 		return respList;
@@ -5747,16 +5747,13 @@ public class Mibs implements SNMPRequestListener {
 	            SNMPVariablePair newPair = null;
 	            try {
 	            	SNMPTreeGetNextRequest<String> node = treeRoot.findBinSearch(snmpOID.toString());
-	            	if(node!=null)
-	        	    	System.out.println("Node FOUND = " + node.data);
-	        	    else
-	        	    	System.out.println("Not Found");
+	            	
 		            newPair = new SNMPVariablePair(new SNMPObjectIdentifier(node.GetNext()), snmpValue);     		
 		            newList.addSNMPObject(newPair);
 				} catch (SNMPBadValueException e) {
 					e.printStackTrace();
 				} catch (Exception e) {
-					System.out.println("Not Found");
+					
 				}			
 			}
 			
