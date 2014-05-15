@@ -123,7 +123,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    	//int level = 1;
 	    	
 	    	if(oid.equalsIgnoreCase(this.data)){
-	    		//System.out.println("Root!");
+	    		//
 	    		return (SNMPTreeGetNextRequest<String>) this;
 	    	}
 	    	
@@ -131,22 +131,21 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    		izq = 0;
 	    		der = L.size()-1;
 		    	center = (izq+der)/2;
-		    	/*System.out.println("NUEVO NIVEL");
+		    	/*
 		    	for (Iterator<SNMPTreeGetNextRequest<String>> iterator = L.iterator(); iterator.hasNext();) {
 					SNMPTreeGetNextRequest<String> snmpTreeGetNextRequest = (SNMPTreeGetNextRequest<String>) iterator.next();
-					System.out.println( snmpTreeGetNextRequest.data );
+					
 				}
-		    	System.out.println("-----");
+		    	
 		    	*/
 		    	while((izq<= der) && !(oid.contains(L.get(center).data))){
-		    		//System.out.println(L.get(center).data + " no esta en " + oid);
-		    		//System.out.println(compareOID(oid,L.get(center).data));
+		    		
 	    			
 		    		if(compareOID(oid,L.get(center).data) < 0 ){
-		    			//System.out.println("Con "+L.get(center).data+" Move> izq");
+		    			
 		    			der = center - 1;
 		    		}else{
-		    			//System.out.println("Con "+L.get(center).data+" Move> der");
+		    			
 		    			izq = center + 1;
 		    		} 
 		    		
@@ -160,10 +159,10 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 		    	}else{
 		    		L = L.get(center).children;
 		    		//level++;
-		    		//System.out.println("bajando al nivel = "+ level);
+		    		
 		    	}
 	    	}
-	    	//System.out.println("Encontrado en el nivel => "+level);
+	    	
 		    return  L.get(center);
 	    	
 	    }
@@ -186,7 +185,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    
 	    
 	    public String GetNext(){
-	    	//System.out.println(this.data + " " + this.tableOrEntry);
+	    	
 	    	if(this.tableOrEntry){
 	    		if(this.children != null && this.children.size() > 0){
 	    			SNMPTreeGetNextRequest<String> node = this.children.get(0);
@@ -196,11 +195,11 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    	    			node = node.children.get(0);
 	    				}
 	    			}
-	    			//System.out.println("mi next => "+ node.data);
+	    			
 	    			return node.data;
 	    		}	    			
 	    	}else{
-	    		//System.out.println("por el else");
+	    		
 	    		if(this.nNext != null){
 	    			SNMPTreeGetNextRequest<String> node = this.nNext;
 	    			while(node.tableOrEntry){
@@ -208,14 +207,14 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	    	    			node = node.children.get(0);
 	    				}else{ // no tiene hijos pero tiene siguiente caso de los Entry del Grupo At
 	    					if(node.nNext != null){
-	    						//System.out.println(node.data.toString());
+	    						
 	    						node = node.nNext;
 	    					}
 	    				}
 	    			}
 	    			return node.data;
 	    		}else{
-	    			//System.out.println("yo mismo");
+	    			
 	    			return this.data;
 	    		}
 	    	}
@@ -1027,7 +1026,7 @@ public class SNMPTreeGetNextRequest<T> implements Iterable<SNMPTreeGetNextReques
 	                    }
                 	}
                 }
-                //System.out.println(indent + node.data + " | " + node.tableOrEntry + " | " + node.nNext);                
+                
 	    	}
 	    	
 	    	return root;	    	
